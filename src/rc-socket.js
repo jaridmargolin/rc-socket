@@ -242,7 +242,9 @@ RcSocket.prototype._trigger = function (name) {
   }
 
   // Trigger
-  if (this[name]) { this[name](args); }
+  if (this[name]) {
+    this[name].apply(root, args);
+  }
 };
 
 /**

@@ -212,7 +212,7 @@ var rcSocket = function () {
       }
       // Trigger
       if (this[name]) {
-        this[name](args);
+        this[name].apply(root, args);
       }
     };
     /**
