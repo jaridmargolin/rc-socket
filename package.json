@@ -2,7 +2,7 @@
   "name": "rc-socket.js",
   "description": "Reconnecting WebSocket.",
   "author": "Jarid Margolin <jarid@firstopinion.co>",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "homepage": "https://github.com/firstopinion/rc-socket.js",
   "repository": {
     "type": "git",
