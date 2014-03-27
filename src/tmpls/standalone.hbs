@@ -1,0 +1,12 @@
+;(function ({{dependencies}}) {
+
+
+{{{code}}}
+{{#if objectToExport}}
+{{#if globalAlias}}
+this['{{{globalAlias}}}'] = {{{objectToExport}}};
+{{/if}}
+{{/if}}
+
+
+}({{{globalDependencies}}}));

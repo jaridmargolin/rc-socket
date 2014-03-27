@@ -1,0 +1,9 @@
+{
+  "name": "rc-socket.js",
+  "version": "0.0.1",
+  "devDependencies": {
+    "jquery": "~1.11.0",
+  	"requirejs": "~2.1.11",
+    "easy-amdtest": "~0.0.1"
+  }
+}
