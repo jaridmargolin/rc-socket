@@ -15,14 +15,14 @@
     <div id="mocha"></div>
 
     <!-- tests -->
-    <script src="../bower_components/requirejs/require.js"></script>
-    <script src="../bower_components/easy-amdtest/dist/easy-amdtest.js"></script>
+    <script src="../node_modules/requirejs/require.js"></script>
+    <script src="../node_modules/easy-amdtest/dist/easy-amdtest.js"></script>
     <script>
       var testSuite = new EasyAMDTest({
         baseUrl: '../src',
         urlArgs: 'bust=' + (new Date()).getTime(),
         paths: {
-          'jquery'    : '/bower_components/jquery/dist/jquery',
+          'jquery'    : '/node_modules/jquery/dist/jquery',
           'proclaim'  : '/node_modules/proclaim/lib/proclaim',
           'async'     : '/node_modules/async/lib/async',
           'mocha'     : '/node_modules/mocha/mocha',
