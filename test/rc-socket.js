@@ -10,7 +10,7 @@ define([
   'jquery',
   'async',
   'proclaim',
-  'rc-socket'
+  'rc-socket/rc-socket'
 ], function ($, async, assert, RcSocket) {
 
 

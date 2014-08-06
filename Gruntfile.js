@@ -7,6 +7,7 @@
 
 module.exports = function (grunt) {
 
+
 // Load tasks
 require('matchdep').filterDev('grunt-*').forEach(grunt.loadNpmTasks);
   
@@ -15,8 +16,12 @@ var browsers = [
   // Latest Versions
   { browserName: 'firefox', platform: 'WIN8' },
   { browserName: 'chrome', platform: 'WIN8' },
-  { browserName: 'safari', platform: 'OS X 10.8' },
-  { browserName: 'safari', platform: 'OS X 10.9' }
+  // { browserName: 'opera', platform: 'WIN7' },
+
+  // Internet Explorer
+  { browserName: 'internet explorer', platform: 'WIN8', version: '10' },
+  { browserName: 'internet explorer', platform: 'VISTA', version: '9' },
+  { browserName: 'internet explorer', platform: 'XP', version: '8' }
 ];
 
 
@@ -39,7 +44,7 @@ grunt.registerMultiTask('process', 'launch', function() {
   var filePath = path.join(process.cwd(), this.filesSrc[0]),
       proc     = procs[this.target];
 
-  if (this.args.shift() == 'stop' && proc) {
+  if (this.args.shift() === 'stop' && proc) {
     proc.kill('SIGINT');
   } else if (!proc) {
     procs[this.target] = spawn('node', [filePath]);
@@ -53,11 +58,14 @@ grunt.initConfig({
   // --------------------------------------------------------------------------
   // PKG CONFIG
   // --------------------------------------------------------------------------
+
   'pkg': grunt.file.readJSON('package.json'),
+
 
   // --------------------------------------------------------------------------
   // JSHINT
   // --------------------------------------------------------------------------
+
   'jshint': {
     src: [
       'Gruntfile.js',
@@ -65,90 +73,80 @@ grunt.initConfig({
       'test/**/*.js'
     ],
     build: [
-      'dist/*.js',
-      '!dist/*.min.js'
+      'dist/**/*.js',
+      '!dist/**/*.min.js'
     ],
     options: {
-      force: true,
-      es3: true,
-      smarttabs: true,
-      // Bad line breaking before '?'.
-      '-W014': true,
-      // Expected a conditional expression and instead saw an assignment.
-      '-W084': true,
-      // Is better written in dot notation.
-      '-W069': true
+      jshintrc: '.jshintrc',
+      force: true
     }
   },
+
 
   // --------------------------------------------------------------------------
   // CLEAN (EMPTY DIRECTORY)
   // --------------------------------------------------------------------------
-  'clean': ['dist'],
+
+  'clean': {
+    js: ['dist'],
+    build: ['dist/*.*']
+  },
+
 
   // --------------------------------------------------------------------------
   // REQUIREJS BUILD
   // --------------------------------------------------------------------------
+
   'requirejs': {
     compile: {
       options: {
-        name: 'rc-socket',
+        name: '_index',
         baseUrl: 'src',
         out: 'dist/rc-socket.js',
         optimize: 'none',
         skipModuleInsertion: true,
-        onBuildWrite: function(name, path, contents) {
-          return require('amdclean').clean({
-            code: contents,
+        paths: {
+          'rc-socket': '../src'
+        },
+        onModuleBundleComplete: function(data) {
+          var fs = require('fs'),
+            amdclean = require('amdclean'),
+            outputFile = data.path;
+
+          fs.writeFileSync(outputFile, amdclean.clean({
+            filePath: outputFile,
             prefixMode: 'camelCase',
+            wrap: false,
             escodegen: {
               format: {
                 indent: { style: '  ' }
               }
             }
-          });
+          }));
         }
       }
     }
   },
 
+
   // --------------------------------------------------------------------------
   // UMD WRAP
   // --------------------------------------------------------------------------
+
   'umd': {
     umd: {
       src: 'dist/rc-socket.js',
       objectToExport: 'rcSocket',
       globalAlias: 'RcSocket',
-      template: 'src/tmpls/umd.hbs',
-      dest: 'dist/umd/rc-socket.js'
-    },
-    amd: {
-      src: 'dist/rc-socket.js',
-      objectToExport: 'rcSocket',
-      globalAlias: 'RcSocket',
-      template: 'src/tmpls/amd.hbs',
-      dest: 'dist/amd/rc-socket.js'
-    },
-    common: {
-      src: 'dist/rc-socket.js',
-      objectToExport: 'rcSocket',
-      globalAlias: 'RcSocket',
-      template: 'src/tmpls/common.hbs',
-      dest: 'dist/common/rc-socket.js'
-    },
-    standalone: {
-      src: 'dist/rc-socket.js',
-      objectToExport: 'rcSocket',
-      globalAlias: 'RcSocket',
-      template: 'src/tmpls/standalone.hbs',
       dest: 'dist/rc-socket.js'
     }
   },
 
+
   // --------------------------------------------------------------------------
   // MINIFY JS
   // --------------------------------------------------------------------------
+
   'uglify': {
     all: {
       expand: true,
@@ -159,25 +157,84 @@ grunt.initConfig({
     }
   },
 
+
+  // --------------------------------------------------------------------------
+  // CREATE COMMONJS VERSION IN DIST
+  // --------------------------------------------------------------------------
+
+  'nodefy': {
+    all: {
+      expand: true,
+      src: ['**/*.js'],
+      cwd: 'src/',
+      dest: 'dist/common'
+    }
+  },
+
+
+  // --------------------------------------------------------------------------
+  // Copy Parts
+  // --------------------------------------------------------------------------
+
+  'copy': {
+    js: {
+      expand: true,
+      src: ['**/*.js'],
+      cwd: 'src',
+      dest: 'dist/amd'
+    }
+  },
+
+
+  // --------------------------------------------------------------------------
+  // WATCH FILES
+  // --------------------------------------------------------------------------
+
+  'watch': {
+    options: {
+      spawn: true
+    },
+    grunt: {
+      files: ['Gruntfile.js'],
+      tasks: ['build'],
+      options: { livereload: true }
+    },
+    tests: {
+      files: ['test/**/*.*'],
+      options: { livereload: true }
+    },
+    js: {
+      files: ['src/**/*.js'],
+      tasks: ['build:js'],
+      options: { livereload: true }
+    }
+  },
+
+
   // --------------------------------------------------------------------------
   // API / SOCKETS FOR TESTING
   // --------------------------------------------------------------------------
+
   'process': {
     api: { src: 'test/api/api.js' }
   },
 
+
   // --------------------------------------------------------------------------
   // STATIC SERVER
   // --------------------------------------------------------------------------
+
   'connect': {
     server: {
       options: { base: '', port: 9999 }
     }
   },
 
+
   // --------------------------------------------------------------------------
   // TESTS
   // --------------------------------------------------------------------------
+
   'saucelabs-mocha': {
     all: {
       options: {
@@ -191,19 +248,33 @@ grunt.initConfig({
     }
   },
 
+
   // --------------------------------------------------------------------------
   // MOCHA
   // --------------------------------------------------------------------------
+
   'mocha_phantomjs': {
     all: ['test/_runner.html']
   }
 
+
 });
 
-// Tasks    
-grunt.registerTask('default', ['jshint:src', 'clean', 'requirejs', 'umd:umd', 'umd:amd', 'umd:common', 'umd:standalone', 'uglify', 'jshint:build']);
+
+// DEFAULT
+grunt.registerTask('default', ['build']);
+
+// BUILD
+grunt.registerTask('build', ['build:js']);
+grunt.registerTask('build:js', ['clean:js', 'jshint:src', 'requirejs', 'umd', 'uglify', 'copy:js', 'nodefy']);
+
+// TEST
+grunt.registerTask('test', ['test-local']);
 grunt.registerTask('test-local', ['default', 'process:api:start', 'mocha_phantomjs', 'process:api:stop']);
-grunt.registerTask('test', ['default', 'connect', 'saucelabs-mocha']);
+grunt.registerTask('test-sauce', ['jshint', 'connect', 'saucelabs-mocha']);
+
+// DEVELOP
+grunt.registerTask('dev', ['build', 'connect', 'watch']);
 
 
 };

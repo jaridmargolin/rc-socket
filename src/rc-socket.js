@@ -207,8 +207,9 @@ RcSocket.prototype._reconnect = function (evt, rcAttempt) {
 RcSocket.prototype._sendQueued = function () {
   for (var i = 0, l = this.queue.length; i < l; i++) {
     this.send(this.queue[i]);
-    this.queue.shift();
   }
+
+  this.queue = [];
 };
 
 /**
