@@ -39,6 +39,7 @@ var RcSocket = function (url, protocols) {
   this.debug    = false;
   this.timeout  = 2500;
   this.maxRetry = 1000;
+  this.delay    = 100;
   this.logger   = console.debug;
 
   // State
@@ -209,13 +210,34 @@ RcSocket.prototype._reconnect = function (evt, rcAttempt) {
  * @private
  */
 RcSocket.prototype._sendQueued = function () {
-  for (var i = 0, l = this.queue.length; i < l; i++) {
-    this.send(this.queue[i]);
+  for (var i = 0, l = this.queue.length; i <= l; i++) {
+    this._delayQueueSend(i);
   }
-
-  this.queue = [];
 };
 
+
+/**
+ * Send delayed message to avoid timing
+ * issues when sending queued.
+ *
+ * @private
+ *
+ * @param - Id/order of message to send.
+ */
+RcSocket.prototype._delayQueueSend = function (i) {
+  var delay = this.delay * i;
+  
+  setTimeout(function () {
+    // send message
+    if (this.queue[i]) {
+      return this.send(this.queue[i]);
+    }
+
+    // last - reset
+    this.queue = [];
+
+  }.bind(this), delay);
+};
 
 /**
  * Update state, log, trigger.
