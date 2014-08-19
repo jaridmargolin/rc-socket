@@ -1,26 +1,23 @@
 /*!
  * rc-socket.js:
- *
- * (C) 2014 First Opinion
- * MIT LICENCE
- *
+ * 
+ * Copyright (c) 2014
  * Originally adapted from: https://github.com/joewalnes/reconnecting-websocket
  */
 
 
 
 
-
-// ----------------------------------------------------------------------------
-// Scope vars
-// ----------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * scope
+ * ---------------------------------------------------------------------------*/
 
 var root = this;
 
 
-// ----------------------------------------------------------------------------
-// ReconnecingWebSocket
-// ----------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * RcSocket
+ * ---------------------------------------------------------------------------*/
 
 /**
  * This behaves like a WebSocket in every way, except if it fails to connect,
@@ -64,6 +61,7 @@ var RcSocket = function (url, protocols) {
   setTimeout(this.connect.bind(this), 0);
 };
 
+
 /**
  * Wrapper around websocket.
  *
@@ -85,9 +83,9 @@ RcSocket.prototype.connect = function () {
   var rcAttempt = true,
       timeout   = this._setTimeout(this.ws);
 
-  // ---------------------------------
-  // Open
-  // ---------------------------------
+  /* ---------------------------------
+   * open
+   * -------------------------------*/
   this.ws.onopen = function (evt) {
     clearTimeout(timeout);
 
@@ -97,9 +95,9 @@ RcSocket.prototype.connect = function () {
     this._sendQueued();
   }.bind(this);
     
-  // ---------------------------------
-  // Close
-  // ---------------------------------
+  /* ---------------------------------
+   * close
+   * -------------------------------*/
   this.ws.onclose = function (evt) {
     clearTimeout(timeout);
 
@@ -111,20 +109,21 @@ RcSocket.prototype.connect = function () {
     }
   }.bind(this);
 
-  // ---------------------------------
-  // Message
-  // ---------------------------------
+  /* ---------------------------------
+   * message
+   * -------------------------------*/
   this.ws.onmessage = function (evt) {
     this._trigger('onmessage', evt);
   }.bind(this);
 
-  // ---------------------------------
-  // Error
-  // ---------------------------------
+  /* ---------------------------------
+   * error
+   * -------------------------------*/
   this.ws.onerror = function (evt) {
     this._trigger('onerror', evt);
   }.bind(this);
 };
+
 
 /**
  * Wrapper around ws.send that adds data to queue if socket is not ready.
@@ -142,6 +141,7 @@ RcSocket.prototype.send = function (data) {
   this.queue.push(data);
 };
 
+
 /**
  * Function to generate interval using exponential backoff
  *
@@ -155,6 +155,7 @@ RcSocket.prototype.close = function () {
   }
 };
 
+
 /**
  * Additional public API method to refresh the connection if still open
  * (close, re-open). For example, if the app suspects bad data / missed heart
@@ -167,6 +168,7 @@ RcSocket.prototype.refresh = function() {
     this.ws.close();
   }
 };
+
 
 /**
  * Set timeout on websocket.
@@ -182,6 +184,7 @@ RcSocket.prototype._setTimeout = function (ws) {
     this.timedOut = false;
   }.bind(this), this.timeout);
 };
+
 
 /**
  * Wrapper around ws.send that adds data to queue if socket is not ready.
@@ -199,6 +202,7 @@ RcSocket.prototype._reconnect = function (evt, rcAttempt) {
   setTimeout(this.connect.bind(this), this._getInterval());
 };
 
+
 /**
  * Loop over all queued messages and send.
  *
@@ -211,6 +215,7 @@ RcSocket.prototype._sendQueued = function () {
 
   this.queue = [];
 };
+
 
 /**
  * Update state, log, trigger.
@@ -226,6 +231,7 @@ RcSocket.prototype._stateChanged = function (state) {
   var args = Array.prototype.slice.call(arguments, 0);
   this._trigger.apply(this, args.slice(1, args.length));
 };
+
 
 /**
  * Convenience method for semantically calling handlers.
@@ -248,6 +254,7 @@ RcSocket.prototype._trigger = function (name) {
   }
 };
 
+
 /**
  * Function to generate interval using exponential backoff.
  *
@@ -262,6 +269,7 @@ RcSocket.prototype._getInterval = function () {
   return (interval > this.maxRetry) ? this.maxRetry : interval;
 };
 
+
 /**
  * Setting this to true is the equivalent of setting all instances of
  * RcSocket.debug to true.
@@ -269,9 +277,10 @@ RcSocket.prototype._getInterval = function () {
 RcSocket.debugAll = false;
 
 
-// ----------------------------------------------------------------------------
-// Expose
-// ----------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * export
+ * ---------------------------------------------------------------------------*/
+
 module.exports = RcSocket;
 
 

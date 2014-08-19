@@ -8,20 +8,6 @@ A more robust WebSocket interface.
 * Configurable logging.
 
 
----
-
-## Install
-
-```
-$ npm install rc-socket.js
-```
-
-```
-bower install rc-socket.js
-```
-
-
----
 
 ## Usage
 
@@ -43,11 +29,9 @@ ws.onerror = function () {};
 ws.onconnecting = function () {};
 ```
 
----
+
 
 ## TESTS
-
-### Local
 
 **Install Dependencies**
 
@@ -55,18 +39,13 @@ ws.onconnecting = function () {};
 npm install
 ```
 
-```
-bower install
-```
-
 **Run/View**
 
 ```
-grunt test-local
+npm test
 ```
 
 
----
 
 ## License
 

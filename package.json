@@ -2,7 +2,7 @@
   "name": "rc-socket.js",
   "description": "Reconnecting WebSocket.",
   "author": "Jarid Margolin <jarid@firstopinion.co>",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "homepage": "https://github.com/firstopinion/rc-socket.js",
   "repository": {
     "type": "git",
@@ -12,35 +12,16 @@
     "url": "https://github.com/firstopinion/rc-socket.js/issues"
   },
   "scripts": {
-    "test": "grunt test-local"
+    "test": "grunt test"
   },
+  "main": "dist/common/rc-socket.js",
   "devDependencies": {
+    "easy-build": "~0.0.2",
     "jquery": "~1.11.0",
-    "requirejs": "~2.1.11",
-    "easy-amdtest": "~0.0.1",
     "async": "~0.9.0",
     "hapi": "~3.0.2",
     "ws": "~0.4.31",
-    "amdclean": "~2.2.4",
-    "easy-amdtest": "0.0.4",
-    "grunt": "~0.4.5",
-    "grunt-contrib-clean": "~0.6.0",
-    "grunt-contrib-concat": "~0.5.0",
-    "grunt-contrib-connect": "~0.8.0",
-    "grunt-contrib-copy": "~0.5.0",
-    "grunt-contrib-jshint": "~0.10.0",
-    "grunt-contrib-nodefy": "~0.2.1",
-    "grunt-contrib-uglify": "~0.5.1",
-    "grunt-contrib-watch": "~0.6.0",
-    "grunt-gh-pages": "~0.9.0",
-    "grunt-mocha-phantomjs": "~0.6.0",
-    "grunt-requirejs": "^0.4.2",
-    "grunt-saucelabs": "~8.2.0",
-    "grunt-umd": "~1.7.3",
-    "matchdep": "~0.3.0",
-    "mocha": "~1.21.3",
     "proclaim": "~2.0.0",
-    "requirejs": "~2.1.14",
     "sinon": "~1.10.1"
   },
   "license": "MIT"

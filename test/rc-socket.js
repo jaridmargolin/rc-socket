@@ -1,22 +1,20 @@
-/*
- * test/rc-socket.js:
- *
- * (C) 2014 First Opinion
- * MIT LICENCE
- *
+/*!
+ * test/rc-socket.js
+ * 
+ * Copyright (c) 2014
  */
 
 define([
   'jquery',
   'async',
   'proclaim',
-  'rc-socket/rc-socket'
+  'rc-socket'
 ], function ($, async, assert, RcSocket) {
 
 
-// ----------------------------------------------------------------------------
-// Module
-// ----------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * reusable
+ * ---------------------------------------------------------------------------*/
 
 // Env vars
 var socketUrl = 'ws://localhost:9998/',
@@ -26,14 +24,12 @@ var socketUrl = 'ws://localhost:9998/',
 var ws;
 
 
-// ----------------------------------------------------------------------------
-// Helpers
-// ----------------------------------------------------------------------------
+/* -----------------------------------------------------------------------------
+ * helpers
+ * ---------------------------------------------------------------------------*/
 
-//
 // Helper method around ajax to make compatible with
 // node style err success callbacks
-//
 var command = function (endpoint, done) {
   $.ajax(apiUrl + endpoint, {
     type: 'POST'
@@ -44,32 +40,24 @@ var command = function (endpoint, done) {
   });
 };
 
-//
 // Start socket
-//
 var startSocket = function (done) {
   command('socket/start', done);
 };
 
-//
 // Start socket
-//
 var cleanUp = function (done) {
   ws.close();
   command('socket/stop', done);
 };
 
-//
 // Connect to socket
-//
 var connectToSocket = function (done) {
   ws = new RcSocket(socketUrl);
   done();
 };
 
-//
 // Assert connected
-//
 var assertConnected = function (done) {
   // DUCK PUNCH!....DUCK PUNCH!....DUCK PUNCH DUCK PUNCH DUCK PUNCH
   var onopen = ws.onopen;
@@ -79,19 +67,18 @@ var assertConnected = function (done) {
   };
 };
 
-//
 // Little helper method that returns a function to use with
 // async library. The returned fn will pause async flow for a specified time.
-//
 var wait = function (time) {
   return function (done) {
     setTimeout(done, time);
   };
 };
 
-// ----------------------------------------------------------------------------
-// Test
-// ----------------------------------------------------------------------------
+
+/* -----------------------------------------------------------------------------
+ * test
+ * ---------------------------------------------------------------------------*/
 
 describe('RcSocket', function () {
 

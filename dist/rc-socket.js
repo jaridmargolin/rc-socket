@@ -1,32 +1,34 @@
-(function(root, factory) {
-    if(typeof exports === 'object') {
-        module.exports = factory();
-    }
-    else if(typeof define === 'function' && define.amd) {
-        define([], factory);
-    }
-    else {
-        root['RcSocket'] = factory();
-    }
-}(this, function() {
+(function (root, factory) {
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define([], function () {
+      return (root.returnExportsGlobal = factory());
+    });
+  } else if (typeof exports === 'object') {
+    // Node. Does not work with strict CommonJS, but
+    // only CommonJS-like enviroments that support module.exports,
+    // like Node.
+    module.exports = factory();
+  } else {
+    root['RcSocket'] = factory();
+  }
+}(this, function () {
 
 /*!
  * rc-socket.js:
- *
- * (C) 2014 First Opinion
- * MIT LICENCE
- *
+ * 
+ * Copyright (c) 2014
  * Originally adapted from: https://github.com/joewalnes/reconnecting-websocket
  */
-var rcSocketRcSocket, index;
-rcSocketRcSocket = function () {
-  // ----------------------------------------------------------------------------
-  // Scope vars
-  // ----------------------------------------------------------------------------
+var rcSocket;
+rcSocket = function () {
+  /* -----------------------------------------------------------------------------
+   * scope
+   * ---------------------------------------------------------------------------*/
   var root = this;
-  // ----------------------------------------------------------------------------
-  // ReconnecingWebSocket
-  // ----------------------------------------------------------------------------
+  /* -----------------------------------------------------------------------------
+   * RcSocket
+   * ---------------------------------------------------------------------------*/
   /**
    * This behaves like a WebSocket in every way, except if it fails to connect,
    * or it gets disconnected, it will use an exponential backoff until it
@@ -81,9 +83,9 @@ rcSocketRcSocket = function () {
     this._stateChanged('CONNECTING', 'onconnecting');
     // Start timer
     var rcAttempt = true, timeout = this._setTimeout(this.ws);
-    // ---------------------------------
-    // Open
-    // ---------------------------------
+    /* ---------------------------------
+     * open
+     * -------------------------------*/
     this.ws.onopen = function (evt) {
       clearTimeout(timeout);
       rcAttempt = false;
@@ -91,9 +93,9 @@ rcSocketRcSocket = function () {
       this._stateChanged('OPEN', 'onopen', evt);
       this._sendQueued();
     }.bind(this);
-    // ---------------------------------
-    // Close
-    // ---------------------------------
+    /* ---------------------------------
+     * close
+     * -------------------------------*/
     this.ws.onclose = function (evt) {
       clearTimeout(timeout);
       this.ws = null;
@@ -103,15 +105,15 @@ rcSocketRcSocket = function () {
         this._reconnect(evt, rcAttempt);
       }
     }.bind(this);
-    // ---------------------------------
-    // Message
-    // ---------------------------------
+    /* ---------------------------------
+     * message
+     * -------------------------------*/
     this.ws.onmessage = function (evt) {
       this._trigger('onmessage', evt);
     }.bind(this);
-    // ---------------------------------
-    // Error
-    // ---------------------------------
+    /* ---------------------------------
+     * error
+     * -------------------------------*/
     this.ws.onerror = function (evt) {
       this._trigger('onerror', evt);
     }.bind(this);
@@ -244,23 +246,13 @@ rcSocketRcSocket = function () {
    * RcSocket.debug to true.
    */
   RcSocket.debugAll = false;
-  // ----------------------------------------------------------------------------
-  // Expose
-  // ----------------------------------------------------------------------------
+  /* -----------------------------------------------------------------------------
+   * export
+   * ---------------------------------------------------------------------------*/
   return RcSocket;
 }();
-/*!
- * _index.js
- * 
- * Copyright (c) 2014
- */
-index = function (RcSocket) {
-  // ----------------------------------------------------------------------------
-  // Expose
-  // ----------------------------------------------------------------------------
-  return RcScoket;
-}(rcSocketRcSocket);
 
 return rcSocket;
+
 
 }));
