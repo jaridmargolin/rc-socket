@@ -100,6 +100,12 @@ RcSocket.prototype.connect = function () {
   this.ws.onopen = function (evt) {
     clearTimeout(timeout);
 
+    // Fix error where close is explicitly called
+    // but onopen event is still triggered
+    if (this.forcedClose) {
+      return this.close();
+    }
+    
     hasConnected = true;
     this.attempts = 1;
     this._stateChanged('OPEN', 'onopen', evt);
