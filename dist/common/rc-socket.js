@@ -223,9 +223,10 @@ RcSocket.prototype._reconnect = function (evt, rcAttempt) {
  */
 RcSocket.prototype._sendQueued = function () {
   var l = this.queue.length;
+      i = l;
 
-  while (l--) {
-    this._delayQueueSend(l);
+  while (i--) {
+    this._delayQueueSend(i, l - i);
   }
 };
 
@@ -238,8 +239,8 @@ RcSocket.prototype._sendQueued = function () {
  *
  * @param - Id/order of message to send.
  */
-RcSocket.prototype._delayQueueSend = function (i) {
-  var delay = this.delay * i;
+RcSocket.prototype._delayQueueSend = function (i, d) {
+  var delay = this.delay * d;
   
   setTimeout(function () {
     this.send(this.queue[i]);

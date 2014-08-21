@@ -200,8 +200,9 @@ rcSocket = function () {
    */
   RcSocket.prototype._sendQueued = function () {
     var l = this.queue.length;
-    while (l--) {
-      this._delayQueueSend(l);
+    i = l;
+    while (i--) {
+      this._delayQueueSend(i, l - i);
     }
   };
   /**
@@ -212,8 +213,8 @@ rcSocket = function () {
    *
    * @param - Id/order of message to send.
    */
-  RcSocket.prototype._delayQueueSend = function (i) {
-    var delay = this.delay * i;
+  RcSocket.prototype._delayQueueSend = function (i, d) {
+    var delay = this.delay * d;
     setTimeout(function () {
       this.send(this.queue[i]);
       this.queue.pop();
