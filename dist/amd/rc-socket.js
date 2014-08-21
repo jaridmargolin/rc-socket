@@ -91,8 +91,8 @@ RcSocket.prototype.connect = function () {
   this._stateChanged('CONNECTING', 'onconnecting');
 
   // Start timer
-  var rcAttempt = true,
-      timeout   = this._setTimeout(this.ws);
+  var hasConnected = false,
+      timeout      = this._setTimeout(this.ws);
 
   /* ---------------------------------
    * open
@@ -100,7 +100,13 @@ RcSocket.prototype.connect = function () {
   this.ws.onopen = function (evt) {
     clearTimeout(timeout);
 
-    rcAttempt = false;
+    // Fix error where close is explicitly called
+    // but onopen event is still triggered
+    if (this.forcedClose) {
+      return this.close();
+    }
+    
+    hasConnected = true;
     this.attempts = 1;
     this._stateChanged('OPEN', 'onopen', evt);
     this._sendQueued();
@@ -116,7 +122,7 @@ RcSocket.prototype.connect = function () {
     if (this.forced) {
       this._stateChanged('CLOSED', 'onclose', evt);
     } else if (!this.unload) {
-      this._reconnect(evt, rcAttempt);
+      this._reconnect(evt, hasConnected);
     }
   }.bind(this);
 
@@ -205,9 +211,9 @@ RcSocket.prototype._setTimeout = function (ws) {
  * @public
  * @param {Object} data - data to send via web socket.
  */
-RcSocket.prototype._reconnect = function (evt, rcAttempt) {
+RcSocket.prototype._reconnect = function (evt, hasConnected) {
   // Was open at some point so we need to trigger close evts
-  if (!rcAttempt && !this.timedOut) {
+  if (hasConnected && !this.timedOut) {
     this._trigger('onclose', evt);
   }
 
