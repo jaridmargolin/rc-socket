@@ -137,8 +137,10 @@ rcSocket = function () {
     if (this.ws && this.readyState) {
       return this.ws.send(data);
     }
-    // Else queue
-    this.queue.push(data);
+    // Else queue - We are adding to the end of the array
+    // so that when we send queued messages we can loop through
+    // in reverse and remove queued as we go.
+    this.queue.unshift(data);
   };
   /**
    * Function to generate interval using exponential backoff
@@ -197,8 +199,9 @@ rcSocket = function () {
    * @private
    */
   RcSocket.prototype._sendQueued = function () {
-    for (var i = 0, l = this.queue.length; i <= l; i++) {
-      this._delayQueueSend(i);
+    var l = this.queue.length;
+    while (l--) {
+      this._delayQueueSend(l);
     }
   };
   /**
@@ -212,12 +215,8 @@ rcSocket = function () {
   RcSocket.prototype._delayQueueSend = function (i) {
     var delay = this.delay * i;
     setTimeout(function () {
-      // send message
-      if (this.queue[i]) {
-        return this.send(this.queue[i]);
-      }
-      // last - reset
-      this.queue = [];
+      this.send(this.queue[i]);
+      this.queue.pop();
     }.bind(this), delay);
   };
   /**
