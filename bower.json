@@ -1,4 +1,12 @@
 {
   "name": "rc-socket.js",
-  "version": "0.2.4"
+  "version": "0.2.5",
+  "ignore": [
+    "**/.*",
+    "Gruntfile.js",
+    "src",
+    "docs",
+    "test",
+    "build"
+  ]
 }
