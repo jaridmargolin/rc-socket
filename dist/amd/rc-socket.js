@@ -102,7 +102,7 @@ RcSocket.prototype.connect = function () {
 
     // Fix error where close is explicitly called
     // but onopen event is still triggered
-    if (this.forcedClose) {
+    if (this.forced) {
       return this.close();
     }
     

@@ -63,8 +63,16 @@ var assertConnected = function (done) {
   var onopen = ws.onopen;
   ws.onopen = function () {
     if (onopen) { onopen.apply(ws, arguments); }
+    ws.onopen = onopen;
     done();
+
   };
+};
+
+// Assert closed
+var assertClosed = function (done) {
+  assert.equal(ws.readyState, WebSocket['CLOSED']);
+  done();
 };
 
 // Little helper method that returns a function to use with
@@ -195,7 +203,7 @@ describe('RcSocket', function () {
     ], done);
   });
 
-  it('Should retry if close event is called.', function (done) {
+  it('Should retry if WebSocket close method is called.', function (done) {
     // Trigger ws close event
     var triggerClose = function (done) {
       ws.ws.close();
@@ -209,6 +217,53 @@ describe('RcSocket', function () {
       assertConnected,
       triggerClose,
       assertConnected,
+      cleanUp
+    ], done);
+  });
+
+  it('Should force close if RcSocket close method is called.', function (done) {
+    var closeSocket = function (done) {
+      ws.close();
+      ws.onclose = function () { done(); };
+    };
+
+    // Run
+    async.series([
+      startSocket,
+      connectToSocket,
+      assertConnected,
+      closeSocket,
+      assertClosed,
+      cleanUp
+    ], done);
+  });
+
+  it('Should call close if forced is true and WebSocket onopen handler is called.', function (done) {
+    var setForced = function (done) {
+      ws.forced = true;
+      done();
+    };
+
+    var callOnopen = function (done) {
+      ws.ws.onopen();
+      done();
+    };
+
+    var assertClosed = function (done) {
+      ws.onclose = function () {
+        assert.equal(ws.readyState, WebSocket['CLOSED']);
+        done();
+      };
+    };
+
+    // Run
+    async.series([
+      startSocket,
+      connectToSocket,
+      assertConnected,
+      setForced,
+      callOnopen,
+      assertClosed,
       cleanUp
     ], done);
   });
