@@ -20,12 +20,8 @@ module.exports = function (grunt) {
   // Checks if ports 9997 to 9999 inclusive are available
   portscanner.findAPortInUse(9997, 9999, '127.0.0.1', function(error, port) {
     // Status is 'open' if currently in use or 'closed' if available
-    if (!error) {
-      if (port) {
+    if (!error && port) {
         throw new Error('Cannot start Services port ' + port + ' is being used.');
-      }
-    } else {
-      console.log('There was an error');
     }
   });
 
