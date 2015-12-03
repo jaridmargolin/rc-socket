@@ -19,7 +19,8 @@ module.exports = function (grunt) {
 
   // easy-build yo!
   easybuild.load(grunt, {
-    'test:local': ['assemble', 'process:api:start', 'mocha_phantomjs', 'process:api:stop']
+    'test': ['build', 'test:rcsocket'],
+    'test:rcsocket': ['process:api:start', 'test:local', 'process:api:stop']
   });
 
 };
