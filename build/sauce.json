@@ -1,7 +1,8 @@
 {
   "browsers" : [
     { "browserName": "chrome", "platform": "WIN8" },
-    { "browserName": "firefox", "platform": "WIN8" }
+    { "browserName": "firefox", "platform": "WIN8" },
+    { "browserName": "internet explorer", "platform": "WIN8", "version": "10" }
   ],
   "throttled"      : 1,
   "tunnelArgs"     : ["-B", "all"]
