@@ -1,0 +1,9 @@
+{
+  "browsers" : [
+    { "browserName": "chrome", "platform": "WIN8" },
+    { "browserName": "firefox", "platform": "WIN8" }
+  ],
+  "throttled"      : 1,
+  "tunnelArgs"     : ["-B", "all"]
+}
+
