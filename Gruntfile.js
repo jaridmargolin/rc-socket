@@ -27,8 +27,14 @@ module.exports = function (grunt) {
 
   // easy-build yo!
   easybuild.load(grunt, {
-    'test': ['build', 'test:rcsocket'],
-    'test:rcsocket': ['process:api:start', 'test:local', 'process:api:stop']
+    'test:local:prehook': ['process:api:start'],
+    'test:local:posthook': ['process:api:stop'],
+
+    'test:sauce:prehook' : ['process:api:start'],
+    'test:sauce:posthook' : ['process:api:stop'],
+
+    'dev:prehook': ['process:api:start'],
+    'dev:posthook': ['process:api:stop'],
   });
 
 };
