@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+    <!-- meta -->
+    <meta charset="utf-8" />
+    <title>rc-socket reference implementation</title>
+
+    <!-- styles
+    <link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />
+    -->
+        <script src="../../dist/rc-socket.js"></script>
+    </head>
+
+    <body>
+    <script>
+        /*
+        window['logger'] = {
+            log: function() {
+
+            }
+        };
+         */
+        window.RcSocket.debugAll = true;
+    </script>
+
+    <!-- content
+    <div id="workboard" style="position: absolute;"></div>
+    <div id="mocha"></div>
+    -->
+
+    <!-- tests
+    <script src="../node_modules/easy-build/node_modules/easy-amdtest/dist/easy-amdtest.js"></script>
+    <script>
+    // Add amd module
+    var paths = {"async":"../node_modules/async/lib/async","jquery":"../node_modules/jquery/dist/jquery","proclaim":"../node_modules/proclaim/lib/proclaim","sinon":"../node_modules/sinon/pkg/sinon","mocha":"../node_modules/easy-build/node_modules/mocha/mocha"};
+    paths['rc-socket'] = '../dist/amd';
+
+    var testSuite = new EasyAMDTest({
+        baseUrl: './',
+        urlArgs: 'bust=' + (new Date()).getTime(),
+        paths: paths,
+        shim: {"sinon":{"exports":"sinon"}}
+    }).run({
+        name: 'mocha',
+        dependencies: [],
+        tests: [
+            '../test/_amd.js'
+        ]
+    });
+    </script>
+    -->
+
+</body>
+</html>
