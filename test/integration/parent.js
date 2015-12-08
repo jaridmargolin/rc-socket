@@ -44,7 +44,7 @@ var buildDriver = function () {
             browserName: "chrome"
         })
      //.withCapabilities(webdriver.Capabilities.chrome())
-     //    .withCapabilities(webdriver.Capabilities.firefox())
+     //.withCapabilities(webdriver.Capabilities.firefox())
         .build();
 
 
@@ -72,13 +72,12 @@ var closeWindow = function () {
 };
 
 var launchWindow = function () {
-    /*
     return driver.findElement(By.id('launch'))
         .then(function (button) {
             return button.click();
         });
-     */
-    return driver;
+
+    // return driver;
 };
 
 var getAllHandles = function () {
@@ -164,7 +163,8 @@ describe('parent.js', function () {
     it('Should launch new window.', function () {
         return buildDriver().then(function () {
             return driver.get('http://localhost:9999/test/integration/reference-client.html');
-        }).then(function() {
+        })
+        .then(function() {
             driver.executeScript('return window.RcSocket;')
                 .then(function (z){
                     console.log(z);
