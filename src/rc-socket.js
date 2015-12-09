@@ -43,14 +43,18 @@ var root = this;
  * @constructor
  * @param {String} url - Url to connect to.
  * @param {String|Array} protocols - Optional subprotocols.
+ * @param {Function} logger - Optional external logger.
  */
-var RcSocket = function (url, protocols) {
+var RcSocket = function (url, protocols, logger) {
   // Defaults
-  this.debug    = false;
+  this.debug    = true;
   this.timeout  = 2500;
   this.maxRetry = 1000;
   this.delay    = 100;
-  this.logger   = console.debug;
+  this.logger   = logger;
+  if (!this.logger) {
+    this.logger = console.debug;
+  }
 
   // State
   this.unload   = false;
@@ -282,6 +286,8 @@ RcSocket.prototype._trigger = function (name) {
 
   // Log
   if (this.debug || RcSocket.debugAll) {
+    //this.logger.call('sid!');
+    //this.logger('yo! ' + ['RcSocket', name, this.URL].concat(args));
     this.logger.apply(root, ['RcSocket', name, this.URL].concat(args));
   }
 

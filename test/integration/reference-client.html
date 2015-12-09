@@ -8,10 +8,11 @@
     <!-- styles
     <link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />
     -->
-        <script src="../../dist/rc-socket.js"></script>
     </head>
 
     <body>
+    <script src="../../dist/rc-socket.js"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/loglevel/1.4.0/loglevel.min.js"></script>
     <script>
         /*
         window['logger'] = {
@@ -21,6 +22,27 @@
         };
 
         window.RcSocket.debugAll = true;
+        */
+
+        var clientLogger = {
+            buffer: new Array(),
+
+            debug: function() {
+                clientLogger.buffer.push(arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']);
+            }
+        };
+
+        var createRcSocket = function() {
+            var rc = new RcSocket("ws://localhost:9998/");
+            rc.logger = clientLogger.debug;
+            return rc;
+        };
+
+        /*
+        logBuffer = new Array();
+        window['clientLogger'] = function(mesg) {
+            logBuffer.push(mesg);
+        }
          */
     </script>
 

@@ -139,6 +139,11 @@ var getIds = function (elems) {
     });
 };
 
+function createRcSocket() {
+    //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, console.log);');
+    //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, log.warn);');
+    return driver.executeScript('return window.createRcSocket()');
+};
 
 /* -----------------------------------------------------------------------------
  * test
@@ -148,30 +153,25 @@ describe('parent.js', function () {
 
     this.timeout(10000);
 
-    /*
     beforeEach(function () {
         return buildDriver().then(function () {
-            return driver.get('http://0.0.0.0:9999/runner/reference-client.html');
+            return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
         });
     });
 
     afterEach(function () {
         return driver.quit();
     });
-    */
 
     it('Should launch new window.', function () {
-        return buildDriver().then(function () {
-            return driver.get('http://localhost:9999/test/integration/reference-client.html');
-        })
-        .then(function() {
-            driver.executeScript('return window.RcSocket;')
-                .then(function (z){
+        return createRcSocket().then(function (z){
+                console.log(z);
+            }).then(function() {
+                driver.executeScript('return clientLogger;').then(function (z){
                     console.log(z);
-                })
-        }).then(function() {
-            return driver.quit();
-        });
+                });
+            });
+
     });
 
     /*
