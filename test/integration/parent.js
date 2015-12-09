@@ -6,7 +6,10 @@
  * dependencies
  * ---------------------------------------------------------------------------*/
 
-var path = require('path');
+// Core
+var spawn = require('child_process').spawn,
+    path  = require('path');
+
 //var chai = require('chai');
 //var chaiAsPromised = require('chai-as-promised');
 //var chromedriver = require('chromedriver');
@@ -139,10 +142,30 @@ var getIds = function (elems) {
     });
 };
 
-function createRcSocket() {
+var createRcSocket = function() {
     //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, console.log);');
     //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, log.warn);');
-    return driver.executeScript('return window.createRcSocket()');
+    return driver.executeScript('return window.createRcSocket();');
+};
+
+var dumpClientLogger = function() {
+    return driver.executeScript('return window.clientLogger.buffer;');
+};
+
+
+// TODO: pull these functions out as exports from api.js
+var socketProcess;
+var startServerSocket = function() {
+    var filePath = path.join(__dirname, '../api/web-socket.js');
+    console.log(filePath);
+
+    socketProcess = spawn('node', [filePath]);
+
+    return socketProcess;
+};
+
+var stopServerSocket = function() {
+    return socketProcess.kill('SIGINT');
 };
 
 /* -----------------------------------------------------------------------------
@@ -164,12 +187,23 @@ describe('parent.js', function () {
     });
 
     it('Should launch new window.', function () {
-        return createRcSocket().then(function (z){
+        startServerSocket();
+
+        return createRcSocket()
+            .then(function (z){
+                driver.sleep(1000);
                 console.log(z);
-            }).then(function() {
-                driver.executeScript('return clientLogger;').then(function (z){
-                    console.log(z);
-                });
+            })
+            //.then(function() {
+            //    driver.get('http://0.0.0.0:9999/')
+            //})
+            .then(dumpClientLogger)
+            .then(function (z){
+                driver.sleep(200);
+                console.log(z);
+            })
+            .then(function() {
+                return stopServerSocket();
             });
 
     });

@@ -5,24 +5,21 @@
     <meta charset="utf-8" />
     <title>rc-socket reference implementation</title>
 
-    <!-- styles
+    <!-- styles -->
     <link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />
-    -->
     </head>
 
-    <body>
     <script src="../../dist/rc-socket.js"></script>
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/loglevel/1.4.0/loglevel.min.js"></script>
+    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/loglevel/1.4.0/loglevel.min.js"></script>-->
+
+    <!-- content -->
+    <div id="workboard" style="position: absolute;"></div>
+    <div id="mocha">
+        <input type="button" onclick="createRcSocket();" value="StartSocket"/>
+    </div>
+
+    <!-- traces -->
     <script>
-        /*
-        window['logger'] = {
-            log: function() {
-
-            }
-        };
-
-        window.RcSocket.debugAll = true;
-        */
 
         var clientLogger = {
             buffer: new Array(),
@@ -35,43 +32,11 @@
         var createRcSocket = function() {
             var rc = new RcSocket("ws://localhost:9998/");
             rc.logger = clientLogger.debug;
+            // rc.logger = console.log.bind(console);
             return rc;
         };
 
-        /*
-        logBuffer = new Array();
-        window['clientLogger'] = function(mesg) {
-            logBuffer.push(mesg);
-        }
-         */
     </script>
 
-    <!-- content
-    <div id="workboard" style="position: absolute;"></div>
-    <div id="mocha"></div>
-    -->
-
-    <!-- tests
-    <script src="../node_modules/easy-build/node_modules/easy-amdtest/dist/easy-amdtest.js"></script>
-    <script>
-    // Add amd module
-    var paths = {"async":"../node_modules/async/lib/async","jquery":"../node_modules/jquery/dist/jquery","proclaim":"../node_modules/proclaim/lib/proclaim","sinon":"../node_modules/sinon/pkg/sinon","mocha":"../node_modules/easy-build/node_modules/mocha/mocha"};
-    paths['rc-socket'] = '../dist/amd';
-
-    var testSuite = new EasyAMDTest({
-        baseUrl: './',
-        urlArgs: 'bust=' + (new Date()).getTime(),
-        paths: paths,
-        shim: {"sinon":{"exports":"sinon"}}
-    }).run({
-        name: 'mocha',
-        dependencies: [],
-        tests: [
-            '../test/_amd.js'
-        ]
-    });
-    </script>
-    -->
-
-</body>
+    </body>
 </html>
