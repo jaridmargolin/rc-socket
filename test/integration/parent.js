@@ -106,6 +106,13 @@ var getChildHandle = function () {
         });
 };
 
+var getSecondChildHandle = function () {
+    return getAllHandles()
+        .then(function (handles) {
+            return handles[2];
+        });
+};
+
 var getParentWindow = function () {
     return getParentHandle()
         .then(function (handle) {
@@ -119,6 +126,8 @@ var getChildWindow = function () {
             return driver.switchTo().window(handle);
         });
 };
+
+var getLoggerWindow = getChildWindow;
 
 var hasChildReference = function () {
     var script = "return !!window.launchJS.instances['child'];";
@@ -164,8 +173,14 @@ var createRcSocket = function() {
 };
 
 var dumpClientLogger = function() {
-    driver.sleep(200);
-    return driver.executeScript('return window.clientLogger.buffer;');
+    return driver.sleep(200).then(function(){
+        return getChildWindow()
+            .then(function() {
+                return driver.executeScript('return window.clientLogger.buffer;')
+            })
+            .then(waitAndLog)
+            .then(getParentWindow);
+    });
 };
 
 
@@ -185,7 +200,7 @@ var stopServerSocket = function() {
 };
 
 var waitAndLog = function(z){
-    return driver.sleep(1000).then(function() {
+    return driver.sleep(100).then(function() {
 
         //return driver.manage().logs().get(logging.Type.BROWSER)
         //    .then(function(entries) {
@@ -216,7 +231,38 @@ var waitASecond = function(){
  * test
  * ---------------------------------------------------------------------------*/
 
-describe('parent.js', function () {
+function sharedTestcases() {
+    it('Should launch new window and create the RcSocket.', function () {
+        return loadClient()
+            .then(createRcSocket)
+            .then(dumpClientLogger);
+    });
+
+    it('Should reconnect the WebSocket on refresh.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
+            .then(refreshWindow)
+            .then(waitASecond)
+            .then(dumpClientLogger);
+    });
+
+    it('Should drop the WebSocket onto redirect.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
+            .then(directBrowserAway)
+            .then(dumpClientLogger);
+    });
+
+    it('Should execute onClose handler after closing the window.', function () {
+        return loadAndStartClient()
+            .then(refreshWindow)
+            //.then(getParentWindow)
+            .then(closeWindow)
+            .then(dumpClientLogger);
+    });
+}
+
+describe('ServerRunning', function () {
 
     this.timeout(10000);
 
@@ -224,70 +270,52 @@ describe('parent.js', function () {
         startServerSocket();
 
         return buildDriver();
-        //.then(function () {
-        //    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
-        //});
     });
 
     afterEach(function () {
         stopServerSocket();
 
-        //return driver.quit();
+        return driver.quit();
     });
 
-    it('Should launch new window.', function () {
-        startServerSocket();
-
-        return loadClient()
-            .then(createRcSocket)
-            //.then(function (z){
-            //    driver.sleep(1000);
-            //    console.log(z);
-            //})
-            .then(dumpClientLogger)
-            .then(waitAndLog);
-
-    });
-
-    it('Should persist the WebSocket on refresh.', function () {
-        return loadAndStartClient()
-            .then(waitASecond)
-            .then(refreshWindow)
-            .then(waitASecond)
-            .then(dumpClientLogger)
-            .then(waitAndLog);
-    });
-
-    it('Should drop the WebSocket hang onto redirect.', function () {
-        return loadAndStartClient()
-            .then(waitASecond)
-            .then(directBrowserAway)
-            .then(dumpClientLogger)
-            .then(waitAndLog);
-    });
-
-    it('Should execute onClose handler set after launch.get call.', function () {
-        return loadAndStartClient()
-            .then(refreshWindow)
-            .then(closeWindow);
-    });
-
-
-    it('Should get reference to child.', function () {
-        return loadAndStartClient()
-            .then(getChildWindow)
-            .then(dumpClientLogger)
-            .then(waitAndLog);
-    });
-
-    /*
-    it('Should execute onClose handler set after launch.open call.', function () {
-        return launchWindow()
-            .then(getChildWindow)
-            .then(closeWindow)
-            .then(getParentWindow)
-            .then(hasExecutedCallback).should.eventually.be.true;
-    });
-    */
+    sharedTestcases();
 
 });
+
+describe('ServerNotRunning', function () {
+
+    this.timeout(10000);
+
+    beforeEach(function () {
+        return buildDriver();
+    });
+
+    afterEach(function () {
+        return driver.quit();
+    });
+
+    sharedTestcases();
+
+});
+
+
+
+
+/*
+ it('Should get reference to child.', function () {
+ return loadAndStartClient()
+ .then(getChildWindow)
+ .then(dumpClientLogger)
+ .then(waitAndLog);
+ });
+ */
+
+/*
+ it('Should execute onClose handler set after launch.open call.', function () {
+ return launchWindow()
+ .then(getChildWindow)
+ .then(closeWindow)
+ .then(getParentWindow)
+ .then(hasExecutedCallback).should.eventually.be.true;
+ });
+ */

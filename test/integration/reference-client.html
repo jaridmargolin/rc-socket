@@ -25,16 +25,20 @@
         var childWin;
 
         var createRcSocket = function() {
-            var child = window.open('reference-logger.html');
+            var child = window.open('', 'childLogger');
             childWin = child.window;
 
-            childWin.clientLogger = {
-                buffer: new Array(),
+            if (!childWin.clientLogger) {
+                childWin.clientLogger = {
+                    buffer: new Array(),
 
-                debug: function() {
-                    childWin.clientLogger.buffer.push(arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']);
-                }
-            };
+                    debug: function() {
+                        childWin.clientLogger.buffer.push(
+                            arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
+                        );
+                    }
+                };
+            }
 
             var rc = new RcSocket("ws://localhost:9998/");
             rc.logger = childWin.clientLogger.debug;
