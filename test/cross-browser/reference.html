@@ -42,6 +42,7 @@
 
             var rc = new RcSocket("ws://localhost:9998/");
             rc.logger = childWin.clientLogger.debug;
+            rc.debug = true;
             //rc.logger = console.info.bind(console);
             return rc;
         };

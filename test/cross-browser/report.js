@@ -10,51 +10,50 @@
 var spawn = require('child_process').spawn,
     path  = require('path');
 
-//var chai = require('chai');
-//var chaiAsPromised = require('chai-as-promised');
-//var chromedriver = require('chromedriver');
-var webdriver = require('selenium-webdriver');
-
-
 /* -----------------------------------------------------------------------------
  * setup
  * ---------------------------------------------------------------------------*/
 
-//var expect = chai.expect;
+var webdriver = require('selenium-webdriver');
 var By = webdriver.By;
 var logging = webdriver.logging;
 var until = webdriver.until;
 var promise = webdriver.promise;
-
-//chai.should();
-//chai.use(chaiAsPromised);
 
 // hack required to set should on Driver derived promises
 Object.defineProperty(webdriver.promise.Promise.prototype, 'should', {
     get: Object.prototype.__lookupGetter__('should')
 });
 
-// add chrome driver to path for run
-//process.env.PATH += ';' + path.join(chromedriver.path);
-
-
 /* -----------------------------------------------------------------------------
  * reusable
  * ---------------------------------------------------------------------------*/
 
 var buildDriver = function () {
-    var prefs = new logging.Preferences();
-    prefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
+    //var prefs = new logging.Preferences();
+    //prefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
 
-    driver = new webdriver.Builder()
-        .withCapabilities({
-            browserName: "chrome"
-        })
-        .setLoggingPrefs(prefs)
-     //.withCapabilities(webdriver.Capabilities.chrome())
-     //.withCapabilities(webdriver.Capabilities.firefox())
-        .build();
-
+    if (process.env.SAUCE_USERNAME !== undefined) {
+        driver = new webdriver.Builder()
+            .usingServer('http://' + process.env.SAUCE_USERNAME + ':' + process.env.SAUCE_ACCESS_KEY + '@ondemand.saucelabs.com:80/wd/hub')
+            .withCapabilities({
+                //'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
+                //build: process.env.TRAVIS_BUILD_NUMBER,
+                username: process.env.SAUCE_USERNAME,
+                accessKey: process.env.SAUCE_ACCESS_KEY,
+                browserName: 'safari'
+            }).build();
+    } else {
+        driver = new webdriver.Builder()
+            .withCapabilities({
+                //browserName: 'chrome'
+                browserName: 'firefox'
+            })
+            //.setLoggingPrefs(prefs)
+            .build();
+    }
+    //.withCapabilities(webdriver.Capabilities.chrome())
+    //.withCapabilities(webdriver.Capabilities.firefox())
 
     return driver.getWindowHandle();
 };
@@ -84,8 +83,6 @@ var launchWindow = function () {
         .then(function (button) {
             return button.click();
         });
-
-    // return driver;
 };
 
 var getAllHandles = function () {
@@ -106,13 +103,6 @@ var getChildHandle = function () {
         });
 };
 
-var getSecondChildHandle = function () {
-    return getAllHandles()
-        .then(function (handles) {
-            return handles[2];
-        });
-};
-
 var getParentWindow = function () {
     return getParentHandle()
         .then(function (handle) {
@@ -127,41 +117,12 @@ var getChildWindow = function () {
         });
 };
 
-var getLoggerWindow = getChildWindow;
-
-var hasChildReference = function () {
-    var script = "return !!window.launchJS.instances['child'];";
-
-    return wait(1000).then(function () {
-        return driver.executeScript(script)
-    });
-};
-
-var hasExecutedCallback = function () {
-    var script = "return !!window['launchjs-session-closed'];";
-
-    return wait(1000).then(function () {
-        return driver.executeScript(script);
-    });
-};
-
-var getScriptIds = function () {
-    return driver.findElements(By.tagName('script'))
-        .then(getIds);
-};
-
-var getIds = function (elems) {
-    return promise.map(elems, function (elem) {
-        return elem.getAttribute('id');
-    });
-};
-
 var loadClient = function() {
-    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
+    return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html');
 };
 
 var loadAndStartClient = function() {
-    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html?immediate');
+    return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html?immediate');
 };
 
 var directBrowserAway = function() {
@@ -176,9 +137,11 @@ var dumpClientLogger = function() {
     return driver.sleep(200).then(function(){
         return getChildWindow()
             .then(function() {
-                return driver.executeScript('return window.clientLogger.buffer;')
+                return driver.executeScript('return window.clientLogger.buffer;');
             })
-            .then(waitAndLog)
+            .then(function(z) {
+                console.log(z);
+            })
             .then(getParentWindow);
     });
 };
@@ -297,25 +260,3 @@ describe('ServerNotRunning', function () {
     sharedTestcases();
 
 });
-
-
-
-
-/*
- it('Should get reference to child.', function () {
- return loadAndStartClient()
- .then(getChildWindow)
- .then(dumpClientLogger)
- .then(waitAndLog);
- });
- */
-
-/*
- it('Should execute onClose handler set after launch.open call.', function () {
- return launchWindow()
- .then(getChildWindow)
- .then(closeWindow)
- .then(getParentWindow)
- .then(hasExecutedCallback).should.eventually.be.true;
- });
- */
