@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
     <head>
-    <!-- meta -->
-    <meta charset="utf-8" />
-    <title>rc-socket reference implementation</title>
+        <!-- meta -->
+        <meta charset="utf-8" />
+        <title>rc-socket reference implementation</title>
 
-    <!-- styles -->
-    <link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />
+        <!-- external script -->
+        <script src="../../dist/rc-socket.js"></script>
+
+        <!-- styles -->
+        <!--<link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />-->
     </head>
 
-    <script src="../../dist/rc-socket.js"></script>
     <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/loglevel/1.4.0/loglevel.min.js"></script>-->
 
     <!-- content -->
@@ -20,22 +22,30 @@
 
     <!-- traces -->
     <script>
-
-        var clientLogger = {
-            buffer: new Array(),
-
-            debug: function() {
-                clientLogger.buffer.push(arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']);
-            }
-        };
+        var childWin;
 
         var createRcSocket = function() {
+            var child = window.open('reference-logger.html');
+            childWin = child.window;
+
+            childWin.clientLogger = {
+                buffer: new Array(),
+
+                debug: function() {
+                    childWin.clientLogger.buffer.push(arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']);
+                }
+            };
+
             var rc = new RcSocket("ws://localhost:9998/");
-            rc.logger = clientLogger.debug;
-            // rc.logger = console.log.bind(console);
+            rc.logger = childWin.clientLogger.debug;
+            //rc.logger = console.info.bind(console);
             return rc;
         };
 
+        if (window.location.search.replace("?", "").length) {
+            createRcSocket();
+            childWin.clientLogger.debug('startsocket-immediate');
+        }
     </script>
 
     </body>

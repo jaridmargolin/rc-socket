@@ -22,6 +22,7 @@ var webdriver = require('selenium-webdriver');
 
 //var expect = chai.expect;
 var By = webdriver.By;
+var logging = webdriver.logging;
 var until = webdriver.until;
 var promise = webdriver.promise;
 
@@ -42,10 +43,14 @@ Object.defineProperty(webdriver.promise.Promise.prototype, 'should', {
  * ---------------------------------------------------------------------------*/
 
 var buildDriver = function () {
+    var prefs = new logging.Preferences();
+    prefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
+
     driver = new webdriver.Builder()
         .withCapabilities({
             browserName: "chrome"
         })
+        .setLoggingPrefs(prefs)
      //.withCapabilities(webdriver.Capabilities.chrome())
      //.withCapabilities(webdriver.Capabilities.firefox())
         .build();
@@ -142,13 +147,24 @@ var getIds = function (elems) {
     });
 };
 
+var loadClient = function() {
+    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
+};
+
+var loadAndStartClient = function() {
+    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html?immediate');
+};
+
+var directBrowserAway = function() {
+    return driver.get('http://0.0.0.0:9999/');
+};
+
 var createRcSocket = function() {
-    //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, console.log);');
-    //return driver.executeScript('rc = new window.RcSocket("ws://localhost:9998/", null, log.warn);');
     return driver.executeScript('return window.createRcSocket();');
 };
 
 var dumpClientLogger = function() {
+    driver.sleep(200);
     return driver.executeScript('return window.clientLogger.buffer;');
 };
 
@@ -168,6 +184,34 @@ var stopServerSocket = function() {
     return socketProcess.kill('SIGINT');
 };
 
+var waitAndLog = function(z){
+    return driver.sleep(1000).then(function() {
+
+        //return driver.manage().logs().get(logging.Type.BROWSER)
+        //    .then(function(entries) {
+        //        console.log(entries);
+        //        //entries.forEach(function(entry) {
+        //        //    console.log('[%s] %s', entry.level.name, entry.message);
+        //        //});
+        //    });
+
+        //(new webdriver.WebDriver.Logs(driver))
+        //    .get('browser')
+        //    .then(function (v) {
+        //        v && v.length && console.log(v);
+        //    });
+
+        console.log(z);
+
+    });
+
+    // when you want logs
+};
+
+var waitASecond = function(){
+    return driver.sleep(1000);
+};
+
 /* -----------------------------------------------------------------------------
  * test
  * ---------------------------------------------------------------------------*/
@@ -177,86 +221,68 @@ describe('parent.js', function () {
     this.timeout(10000);
 
     beforeEach(function () {
-        return buildDriver().then(function () {
-            return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
-        });
+        startServerSocket();
+
+        return buildDriver();
+        //.then(function () {
+        //    return driver.get('http://0.0.0.0:9999/test/integration/reference-client.html');
+        //});
     });
 
     afterEach(function () {
-        return driver.quit();
+        stopServerSocket();
+
+        //return driver.quit();
     });
 
     it('Should launch new window.', function () {
         startServerSocket();
 
-        return createRcSocket()
-            .then(function (z){
-                driver.sleep(1000);
-                console.log(z);
-            })
-            //.then(function() {
-            //    driver.get('http://0.0.0.0:9999/')
+        return loadClient()
+            .then(createRcSocket)
+            //.then(function (z){
+            //    driver.sleep(1000);
+            //    console.log(z);
             //})
             .then(dumpClientLogger)
-            .then(function (z){
-                driver.sleep(200);
-                console.log(z);
-            })
-            .then(function() {
-                return stopServerSocket();
-            });
+            .then(waitAndLog);
 
     });
 
-    /*
-    it('Should store reference to child on parent window.', function () {
-        return launchWindow()
-            .then(hasChildReference).should.eventually.be.true;
-    });
-
-    it('Should only attach inject one script tag on the child window.', function () {
-        return launchWindow()
-            .then(getChildWindow)
-            .then(getScriptIds)
-            .then(function (ids) {
-                return ids.length;
-            }).should.eventually.equal(2);
-    });
-
-    it('Should store reference to child on parent refresh.', function () {
-        return launchWindow()
+    it('Should persist the WebSocket on refresh.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
             .then(refreshWindow)
-            .then(hasChildReference).should.eventually.be.true;
+            .then(waitASecond)
+            .then(dumpClientLogger)
+            .then(waitAndLog);
     });
 
-    it('Should keep reference to child on child refresh.', function () {
-        return launchWindow()
-            .then(getChildWindow)
-            .then(refreshWindow)
-            .then(getParentWindow)
-            .then(hasChildReference).should.eventually.be.true;
-    });
-
-    it('Should store reference to child on child refresh and then parent refresh.', function () {
-        return launchWindow()
-            .then(getChildWindow)
-            .then(refreshWindow)
-            .then(getParentWindow)
-            .then(refreshWindow)
-            .then(hasChildReference).should.eventually.be.true;
-    });
-
-    it('Should execute onClose handler set after launch.open call.', function () {
-        return launchWindow()
-            .then(getChildWindow)
-            .then(closeWindow)
-            .then(getParentWindow)
-            .then(hasExecutedCallback).should.eventually.be.true;
+    it('Should drop the WebSocket hang onto redirect.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
+            .then(directBrowserAway)
+            .then(dumpClientLogger)
+            .then(waitAndLog);
     });
 
     it('Should execute onClose handler set after launch.get call.', function () {
-        return launchWindow()
+        return loadAndStartClient()
             .then(refreshWindow)
+            .then(closeWindow);
+    });
+
+
+    it('Should get reference to child.', function () {
+        return loadAndStartClient()
+            .then(getChildWindow)
+            .then(dumpClientLogger)
+            .then(waitAndLog);
+    });
+
+    /*
+    it('Should execute onClose handler set after launch.open call.', function () {
+        return launchWindow()
             .then(getChildWindow)
             .then(closeWindow)
             .then(getParentWindow)
