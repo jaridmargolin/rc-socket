@@ -20,6 +20,9 @@ var logging = webdriver.logging;
 var until = webdriver.until;
 var promise = webdriver.promise;
 
+var SauceTunnel = require('sauce-tunnel');
+var Q = require('q');
+
 // hack required to set should on Driver derived promises
 Object.defineProperty(webdriver.promise.Promise.prototype, 'should', {
     get: Object.prototype.__lookupGetter__('should')
@@ -28,6 +31,35 @@ Object.defineProperty(webdriver.promise.Promise.prototype, 'should', {
 /* -----------------------------------------------------------------------------
  * reusable
  * ---------------------------------------------------------------------------*/
+var tunnel;
+
+var setupTunnel = function() {
+    if (process.env.SAUCE_USERNAME !== undefined) {
+        tunnel = new SauceTunnel(
+            process.env.SAUCE_USERNAME,
+            process.env.SAUCE_ACCESS_KEY,
+            'tunnel',
+            true,
+            ['-B', '-all', '--verbose']
+        );
+
+        return Q.fcall(tunnel.start(function(status){
+            //var deferred = Q.defer();
+
+            if (status === false){
+                throw new Error('Something went wrong with the tunnel');
+            }
+
+            return tunnel;
+        }));
+    }
+};
+
+var teardownTunnel = function() {
+    if (tunnel) {
+        tunnel.stop();
+    }
+};
 
 var buildDriver = function () {
     //var prefs = new logging.Preferences();
@@ -35,13 +67,17 @@ var buildDriver = function () {
 
     if (process.env.SAUCE_USERNAME !== undefined) {
         driver = new webdriver.Builder()
-            .usingServer('http://' + process.env.SAUCE_USERNAME + ':' + process.env.SAUCE_ACCESS_KEY + '@ondemand.saucelabs.com:80/wd/hub')
+            .usingServer('http://' +
+                process.env.SAUCE_USERNAME + ':' + process.env.SAUCE_ACCESS_KEY +
+                '@ondemand.saucelabs.com:80/wd/hub'
+            )
             .withCapabilities({
-                //'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
+                'tunnel-identifier': 'tunnel',
+                //process.env.TRAVIS_JOB_NUMBER,
                 //build: process.env.TRAVIS_BUILD_NUMBER,
                 username: process.env.SAUCE_USERNAME,
                 accessKey: process.env.SAUCE_ACCESS_KEY,
-                browserName: 'safari'
+                browserName: 'firefox'
             }).build();
     } else {
         driver = new webdriver.Builder()
@@ -231,12 +267,14 @@ describe('ServerRunning', function () {
 
     beforeEach(function () {
         startServerSocket();
+        //setupTunnel().then(
 
         return buildDriver();
     });
 
     afterEach(function () {
         stopServerSocket();
+        //teardownTunnel();
 
         return driver.quit();
     });
@@ -245,6 +283,7 @@ describe('ServerRunning', function () {
 
 });
 
+/*
 describe('ServerNotRunning', function () {
 
     this.timeout(10000);
@@ -260,3 +299,4 @@ describe('ServerNotRunning', function () {
     sharedTestcases();
 
 });
+*/
