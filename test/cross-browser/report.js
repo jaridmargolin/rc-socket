@@ -23,10 +23,6 @@ var promise = webdriver.promise;
 var SauceTunnel = require('sauce-tunnel');
 var Q = require('q');
 
-// hack required to set should on Driver derived promises
-Object.defineProperty(webdriver.promise.Promise.prototype, 'should', {
-    get: Object.prototype.__lookupGetter__('should')
-});
 
 /* -----------------------------------------------------------------------------
  * reusable
@@ -88,8 +84,6 @@ var buildDriver = function () {
             //.setLoggingPrefs(prefs)
             .build();
     }
-    //.withCapabilities(webdriver.Capabilities.chrome())
-    //.withCapabilities(webdriver.Capabilities.firefox())
 
     return driver.getWindowHandle();
 };
@@ -112,13 +106,6 @@ var refreshWindow = function () {
 
 var closeWindow = function () {
     return driver.close();
-};
-
-var launchWindow = function () {
-    return driver.findElement(By.id('launch'))
-        .then(function (button) {
-            return button.click();
-        });
 };
 
 var getAllHandles = function () {
@@ -196,30 +183,6 @@ var startServerSocket = function() {
 
 var stopServerSocket = function() {
     return socketProcess.kill('SIGINT');
-};
-
-var waitAndLog = function(z){
-    return driver.sleep(100).then(function() {
-
-        //return driver.manage().logs().get(logging.Type.BROWSER)
-        //    .then(function(entries) {
-        //        console.log(entries);
-        //        //entries.forEach(function(entry) {
-        //        //    console.log('[%s] %s', entry.level.name, entry.message);
-        //        //});
-        //    });
-
-        //(new webdriver.WebDriver.Logs(driver))
-        //    .get('browser')
-        //    .then(function (v) {
-        //        v && v.length && console.log(v);
-        //    });
-
-        console.log(z);
-
-    });
-
-    // when you want logs
 };
 
 var waitASecond = function(){

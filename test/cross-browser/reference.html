@@ -30,7 +30,7 @@
 
             if (!childWin.clientLogger) {
                 childWin.clientLogger = {
-                    buffer: new Array(),
+                    buffer: [],
 
                     debug: function() {
                         childWin.clientLogger.buffer.push(
