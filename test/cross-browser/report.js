@@ -15,52 +15,12 @@ var spawn = require('child_process').spawn,
  * ---------------------------------------------------------------------------*/
 
 var webdriver = require('selenium-webdriver');
-var By = webdriver.By;
-var logging = webdriver.logging;
-var until = webdriver.until;
-var promise = webdriver.promise;
-
-var SauceTunnel = require('sauce-tunnel');
-var Q = require('q');
-
 
 /* -----------------------------------------------------------------------------
  * reusable
  * ---------------------------------------------------------------------------*/
-var tunnel;
-
-var setupTunnel = function() {
-    if (process.env.SAUCE_USERNAME !== undefined) {
-        tunnel = new SauceTunnel(
-            process.env.SAUCE_USERNAME,
-            process.env.SAUCE_ACCESS_KEY,
-            'tunnel',
-            true,
-            ['-B', '-all', '--verbose']
-        );
-
-        return Q.fcall(tunnel.start, function(status) {
-                if (status === false){
-                    throw new Error('Something went wrong with the tunnel');
-                }
-
-                return tunnel;
-        });
-    }
-
-    return Q.fcall(function() {});
-};
-
-var teardownTunnel = function() {
-    if (tunnel) {
-        tunnel.stop();
-    }
-};
 
 var buildDriver = function () {
-    //var prefs = new logging.Preferences();
-    //prefs.setLevel(logging.Type.BROWSER, logging.Level.INFO);
-
     if (process.env.SAUCE_USERNAME !== undefined) {
         driver = new webdriver.Builder()
             .usingServer('http://' +
@@ -68,9 +28,8 @@ var buildDriver = function () {
                 '@ondemand.saucelabs.com:80/wd/hub'
             )
             .withCapabilities({
-                'tunnel-identifier': 'tunnel',
-                //process.env.TRAVIS_JOB_NUMBER,
-                //build: process.env.TRAVIS_BUILD_NUMBER,
+                'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER,
+                build: process.env.TRAVIS_BUILD_NUMBER,
                 username: process.env.SAUCE_USERNAME,
                 accessKey: process.env.SAUCE_ACCESS_KEY,
                 browserName: 'firefox'
@@ -79,9 +38,8 @@ var buildDriver = function () {
         driver = new webdriver.Builder()
             .withCapabilities({
                 browserName: 'chrome'
-                //browserName: 'firefox'
+                //browserName: suite.options.browserArgument
             })
-            //.setLoggingPrefs(prefs)
             .build();
     }
 
@@ -170,8 +128,6 @@ var dumpClientLogger = function() {
     });
 };
 
-
-// TODO: pull these functions out as exports from api.js
 var socketProcess;
 var startServerSocket = function() {
     var filePath = path.join(__dirname, '../api/web-socket.js');
@@ -218,7 +174,6 @@ function sharedTestcases() {
     it('Should execute onClose handler after closing the window.', function () {
         return loadAndStartClient()
             .then(refreshWindow)
-            //.then(getParentWindow)
             .then(closeWindow)
             .then(dumpClientLogger);
     });
@@ -226,26 +181,18 @@ function sharedTestcases() {
 
 describe('ServerRunning', function () {
 
-    var suite = this;
-
-    before(function(){
-        var util = require('util');
-        console.log(util.inspect(suite, {showHidden: false, depth: null}));
-    });
-
     this.timeout(10000);
 
     beforeEach(function () {
         startServerSocket();
 
-        return setupTunnel().then(buildDriver);
+        return buildDriver();
 
         //return buildDriver();
     });
 
     afterEach(function () {
         stopServerSocket();
-        teardownTunnel();
 
         return driver.quit();
     });
