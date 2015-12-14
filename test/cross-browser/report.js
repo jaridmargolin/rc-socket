@@ -39,16 +39,16 @@ var setupTunnel = function() {
             ['-B', '-all', '--verbose']
         );
 
-        return Q.fcall(tunnel.start(function(status){
-            //var deferred = Q.defer();
+        return Q.fcall(tunnel.start, function(status) {
+                if (status === false){
+                    throw new Error('Something went wrong with the tunnel');
+                }
 
-            if (status === false){
-                throw new Error('Something went wrong with the tunnel');
-            }
-
-            return tunnel;
-        }));
+                return tunnel;
+        });
     }
+
+    return Q.fcall(function() {});
 };
 
 var teardownTunnel = function() {
@@ -78,8 +78,8 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                //browserName: 'chrome'
-                browserName: 'firefox'
+                browserName: 'chrome'
+                //browserName: 'firefox'
             })
             //.setLoggingPrefs(prefs)
             .build();
@@ -122,7 +122,8 @@ var getParentHandle = function () {
 var getChildHandle = function () {
     return getAllHandles()
         .then(function (handles) {
-            return handles[1];
+            //return the last handle
+            return handles.slice(-1)[0];
         });
 };
 
@@ -174,7 +175,6 @@ var dumpClientLogger = function() {
 var socketProcess;
 var startServerSocket = function() {
     var filePath = path.join(__dirname, '../api/web-socket.js');
-    console.log(filePath);
 
     socketProcess = spawn('node', [filePath]);
 
@@ -226,18 +226,26 @@ function sharedTestcases() {
 
 describe('ServerRunning', function () {
 
+    var suite = this;
+
+    before(function(){
+        var util = require('util');
+        console.log(util.inspect(suite, {showHidden: false, depth: null}));
+    });
+
     this.timeout(10000);
 
     beforeEach(function () {
         startServerSocket();
-        //setupTunnel().then(
 
-        return buildDriver();
+        return setupTunnel().then(buildDriver);
+
+        //return buildDriver();
     });
 
     afterEach(function () {
         stopServerSocket();
-        //teardownTunnel();
+        teardownTunnel();
 
         return driver.quit();
     });
@@ -246,7 +254,6 @@ describe('ServerRunning', function () {
 
 });
 
-/*
 describe('ServerNotRunning', function () {
 
     this.timeout(10000);
@@ -262,4 +269,3 @@ describe('ServerNotRunning', function () {
     sharedTestcases();
 
 });
-*/
