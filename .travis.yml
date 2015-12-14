@@ -6,3 +6,9 @@ before_script:
 - npm install -g bower
 - npm install --no-bin-links
 - bower install
+env:
+  global:
+    - secure: JUMJMfIPTRSPgInDwc2rlZ4PT8JCwq8wN2LiBH5KKyXIWqUUeArIyYlLAPXK7LtPaRYwfUAF0mfgPk7LPJtCDCjxD5r4lTKvubd920yiua+La41ciuPNZIRIs4AmTUYdzs/HIYMuyLY3UeYAB0i0x0HuDMPxifxLtOhSQtmmz74=
+    - secure: DZuK4dyc+CKPEyGcHY19NNHiKvEXbqsccwTDzhNJicWslsZ/di9XTbkIxNXWOtj9bO+Fhm5G/S6yNdRx7+nai1yt2n3Do0lr83Lt5T2uijyJLBZzcCaXVFdI/jjuMl7MAzSqGvvbTGLXs1rzem3wemzMiEHpCrvVIiFhio2RB6c=
+addons:
+  sauce_connect: true
