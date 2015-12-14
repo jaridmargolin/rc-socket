@@ -33,7 +33,7 @@ module.exports = function (grunt) {
     'dev:prehook': ['process:api:start'],
     'dev:posthook': ['process:api:stop'],
 
-    'test:crossbrowser' : ['build', 'assemble', 'connect', 'grunt-sauce-tunnel', 'mochaReport']
+    'test:crossbrowser' : ['build', 'assemble', 'connect', 'sauce_tunnel', 'mochaTest', 'sauce_tunnel_stop']
   });
 
   // loads library specific tasks

@@ -4,6 +4,7 @@
  * Copyright (c) 2015
  */
 
+var fs = require('fs');
 
 /* -----------------------------------------------------------------------------
  * task
@@ -18,19 +19,29 @@ module.exports = function (grunt) {
   // `grunt-mocha-test` was previous imported by EasyBuild.
   // This task is merely setting the options.
 
+  var data = JSON.parse(fs.readFileSync('build/sauce.json'));
+
+  var defaults = {
+      options: { reporter: 'spec', browserArgument : 'chrome' },
+      src: ['test/cross-browser/*.js']
+  };
 
   /* ---------------------------------------------------------------------------
    * config
    * -------------------------------------------------------------------------*/
 
-  grunt.config('mochaTest', {
-    chrome: {
-      options: { reporter: 'spec', browserArgument : 'chrome' },
-      src: ['test/cross-browser/*.js']
-    },
-    //firefox: {
-    //},
-    //safari:
+  var config = {};
+
+  data.browsers.forEach(function(browser, index) {
+    var cloned = JSON.parse(JSON.stringify(defaults));
+    cloned.options.browserArgument = browser.browserName;
+
+    config[browser.browserName] = cloned;
   });
+
+  grunt.verbose.writeln('Running Selenium tests with the following config');
+  grunt.verbose.write(JSON.stringify(config, null, 2));
+
+  grunt.config('mochaTest', config);
 
 };
