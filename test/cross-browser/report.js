@@ -37,7 +37,7 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                browserName: 'chrome'
+                browserName: 'firefox'
                 //browserName: suite.options.browserArgument
             })
             .build();
