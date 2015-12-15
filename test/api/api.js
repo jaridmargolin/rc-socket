@@ -17,6 +17,7 @@ var Hapi = require('hapi');
  * ---------------------------------------------------------------------------*/
 
 var socketProcess;
+var linkProcess;
 
 
 /* -----------------------------------------------------------------------------
@@ -43,9 +44,49 @@ server.route({
   }
 });
 
+server.route({
+  method: 'POST',
+  path: '/link/up',
+  handler: function (request, reply) {
+    var filePath = path.join(__dirname, 'link.js');
+    linkProcess = spawn('node', [filePath]);
+
+    linkProcess.stdin.setEncoding('utf-8');
+    //linkProcess.stdout.pipe(process.stdout);
+
+    reply().code(204);
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/link/down',
+  handler: function (request, reply) {
+    linkProcess.kill('SIGINT');
+    reply().code(204);
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/link/drops',
+  handler: function (request, reply) {
+    var cmd = {
+      drop: 5        // tell the link to drop 5% of packets
+    };
+    linkProcess.stdin.write(JSON.stringify(cmd));
+    reply().code(204);
+  }
+});
+
 // Gracefully shutdown if websocket started
 process.on('SIGINT', function () {
-  socketProcess.kill('SIGINT');
+  if (socketProcess) {
+    socketProcess.kill('SIGINT');
+  }
+  if (linkProcess) {
+    linkProcess.kill('SIGINT');
+  }
   process.exit();
 });
 
