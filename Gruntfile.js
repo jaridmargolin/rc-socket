@@ -36,7 +36,8 @@ module.exports = function (grunt) {
     'test:crossbrowser' : ['build', 'assemble', 'connect', 'sauce_tunnel', 'mochaTest', 'sauce_tunnel_stop']
   });
 
-  // loads library specific tasks
+  // Execution order matters
+  // load local task configuration to overwrite easy-build task configuration
   grunt.loadTasks('build/tasks');
 
 };
