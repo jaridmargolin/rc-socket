@@ -19,7 +19,7 @@ var wss = new WsServer({ port: 9998 });
 wss.on('connection', function(ws) {
   ws.on('message', function(message) {
     if (message === 'test') {
-      ws.send(JSON.stringify({ msg: 'reciept' }));
+      ws.send(JSON.stringify({ msg: 'receipt' }));
     }
   });
 });

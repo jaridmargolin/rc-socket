@@ -14,9 +14,6 @@ var easybuild = require('easy-build'),
 
 module.exports = function (grunt) {
 
-  // loads library specific tasks
-  grunt.loadTasks('build/tasks');
-
   // Checks if ports 9997 to 9999 inclusive are available
   portscanner.findAPortInUse(9997, 9999, '127.0.0.1', function(error, port) {
     // Status is 'open' if currently in use or 'closed' if available
@@ -35,6 +32,12 @@ module.exports = function (grunt) {
 
     'dev:prehook': ['process:api:start'],
     'dev:posthook': ['process:api:stop'],
+
+    'test:crossbrowser' : ['build', 'assemble', 'connect', 'sauce_tunnel', 'mochaTest', 'sauce_tunnel_stop']
   });
+
+  // Execution order matters
+  // load local task configuration to overwrite easy-build task configuration
+  grunt.loadTasks('build/tasks');
 
 };

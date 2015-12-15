@@ -23,7 +23,8 @@
     "ws": "~0.4.31",
     "proclaim": "~2.0.0",
     "sinon": "~1.10.1",
-    "portscanner": "~1.0.0"
+    "portscanner": "~1.0.0",
+    "selenium-webdriver": "~2.48.2"
   },
   "license": "MIT"
 }
