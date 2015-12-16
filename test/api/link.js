@@ -4,6 +4,8 @@
  * Copyright (c) 2014
  */
 
+// Core
+var net = require('net');
 
 /* -----------------------------------------------------------------------------
  * process piping
@@ -13,7 +15,6 @@ var stdin = process.stdin,
     inputChunks = [],
     opts = {};
 
-//stdin.resume();
 stdin.setEncoding('utf8');
 
 stdin.on('data', function (chunk) {
@@ -28,27 +29,23 @@ stdin.on('end', function () {
   opts = outputJSON;
 });
 
+//TODO create a custom pipe stream, which will introduce drops
 
 /* -----------------------------------------------------------------------------
  * link proxy
  * ---------------------------------------------------------------------------*/
 
-var net = require('net');
-
 //// http://stackoverflow.com/a/19637388 ////
-
-var addrRegex = /^(([a-zA-Z\-\.0-9]+):)?(\d+)$/;
-
 var addr = {
-  to: addrRegex.exec('localhost:9995'),
-  from: addrRegex.exec('localhost:9998')
+  to: '9995',
+  from: '9998'
 };
 
 net.createServer(function(from) {
   var to = net.createConnection({
-    host: addr.to[2],
-    port: addr.to[3]
+    host: 'localhost',
+    port: addr.to
   });
   from.pipe(to);
   to.pipe(from);
-}).listen(addr.from[3], addr.from[2]);
+}).listen(addr.from, 'localhost');

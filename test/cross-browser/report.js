@@ -119,14 +119,12 @@ var dumpClientLogger = function() {
     });
 };
 
-// TODO, cmmon pull this out to a library already
-
 var apiUrl = 'localhost',
     apiPort = '9997';
 
 var command = function (endpoint) {
     // Set up the request
-    var post_req = http.request({
+    var postReq = http.request({
         host: apiUrl,
         port: apiPort,
         path: '/' + endpoint,
@@ -134,23 +132,15 @@ var command = function (endpoint) {
     }, function (res) { });
 
     // post the data
-    post_req.end();
+    postReq.end();
 };
 
-var startSocket = function () {
-    command('socket/start');
+var startServerSocket = function() {
+    return Q.fcall(command, 'socket/start');
 };
 
-var cleanUp = function () {
-    command('socket/stop');
-};
-
-var startServerSocketPromise = function() {
-    return Q.fcall(startSocket, function(){});
-};
-
-var stopServerSocketPromise = function() {
-    return Q.fcall(cleanUp, function(){});
+var stopServerSocket = function() {
+    return Q.fcall(command, 'socket/stop');
 };
 
 var terminateNetworkLink = function() {
@@ -170,15 +160,15 @@ describe('RcSocketIntegration', function () {
     this.timeout(10000);
 
     beforeEach(function () {
-        startSocket();
-
-        return buildDriver();
+        return startServerSocket()
+            .then(buildDriver);
     });
 
     afterEach(function () {
-        cleanUp();
-
-        return driver.quit();
+        return stopServerSocket()
+        .then(function() {
+            driver.quit();
+        });
     });
 
     it('Logs events when launching new window and creating the RcSocket.', function () {
@@ -210,10 +200,10 @@ describe('RcSocketIntegration', function () {
     });
 
     it('Logs events when server is initially down and a new WebSocket is being opened.', function () {
-        return stopServerSocketPromise()
+        return stopServerSocket()
             .then(loadAndStartClient)
             .then(waitASecond)
-            .then(startServerSocketPromise)
+            .then(startServerSocket)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
@@ -221,9 +211,9 @@ describe('RcSocketIntegration', function () {
     it('Logs events when the window is closed.', function () {
         return loadAndStartClient()
             .then(waitASecond)
-            .then(stopServerSocketPromise)
+            .then(stopServerSocket)
             .then(waitASecond)
-            .then(startServerSocketPromise)
+            .then(startServerSocket)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
