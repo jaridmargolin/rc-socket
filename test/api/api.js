@@ -19,6 +19,22 @@ var Hapi = require('hapi');
 var socketProcess;
 var linkProcess;
 
+/*
+var shutdownSocketService = function() {
+  if (socketProcess) {
+    socketProcess.kill('SIGINT');
+  }
+};
+
+var shutdownLinkService = function() {
+  if (linkProcess) {
+    linkProcess.kill('SIGINT');
+  }
+};
+
+var shutdownServices = function() {
+};
+*/
 
 /* -----------------------------------------------------------------------------
  * api
@@ -30,7 +46,12 @@ server.route({
   path: '/socket/start',
   handler: function (request, reply) {
     var filePath = path.join(__dirname, 'web-socket.js');
-    socketProcess = spawn('node', [filePath]);
+    socketProcess = spawn('node', [filePath], { stdio: 'inherit' });
+
+    filePath = path.join(__dirname, 'link.js');
+    linkProcess = spawn('node', [filePath], { stdio: ['pipe', process.stdout, process.stderr] });
+    linkProcess.stdin.setEncoding('utf-8');
+
     reply().code(204);
   }
 });
@@ -40,10 +61,12 @@ server.route({
   path: '/socket/stop',
   handler: function (request, reply) {
     socketProcess.kill('SIGINT');
+    linkProcess.kill('SIGINT');
     reply().code(204);
   }
 });
 
+/*
 server.route({
   method: 'POST',
   path: '/link/up',
@@ -52,11 +75,10 @@ server.route({
     linkProcess = spawn('node', [filePath]);
 
     linkProcess.stdin.setEncoding('utf-8');
-    //linkProcess.stdout.pipe(process.stdout);
-
     reply().code(204);
   }
 });
+*/
 
 server.route({
   method: 'POST',
