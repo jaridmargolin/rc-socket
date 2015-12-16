@@ -19,23 +19,6 @@ var Hapi = require('hapi');
 var socketProcess;
 var linkProcess;
 
-/*
-var shutdownSocketService = function() {
-  if (socketProcess) {
-    socketProcess.kill('SIGINT');
-  }
-};
-
-var shutdownLinkService = function() {
-  if (linkProcess) {
-    linkProcess.kill('SIGINT');
-  }
-};
-
-var shutdownServices = function() {
-};
-*/
-
 /* -----------------------------------------------------------------------------
  * api
  * ---------------------------------------------------------------------------*/
