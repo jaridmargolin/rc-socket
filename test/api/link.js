@@ -1,5 +1,5 @@
 /*!
- * test/api/web-socket.js
+ * test/api/link.js
  * 
  * Copyright (c) 2014
  */
@@ -10,26 +10,20 @@
 
 var net = require('net');
 
-var sourceport = 9998;
-var destport = 9995;
+//// http://stackoverflow.com/a/19637388 ////
 
-net.createServer(function(s)
-{
-  var buff = '';
-  var connected = false;
-  var cli = net.createConnection(destport);
-  s.on('data', function(d) {
-    if (connected)
-    {
-      cli.write(d);
-    } else {
-      buff += d.toString();
-    }
+var addrRegex = /^(([a-zA-Z\-\.0-9]+):)?(\d+)$/;
+
+var addr = {
+  to: addrRegex.exec('localhost:9995'),
+  from: addrRegex.exec('localhost:9998')
+};
+
+net.createServer(function(from) {
+  var to = net.createConnection({
+    host: addr.to[2],
+    port: addr.to[3]
   });
-  cli.on('connect', function() {
-    console.log('hello!');
-    connected = true;
-    cli.write(buff);
-  });
-  cli.pipe(s);
-}).listen(sourceport);
+  from.pipe(to);
+  to.pipe(from);
+}).listen(addr.from[3], addr.from[2]);
