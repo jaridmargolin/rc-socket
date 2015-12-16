@@ -4,6 +4,31 @@
  * Copyright (c) 2014
  */
 
+
+/* -----------------------------------------------------------------------------
+ * process piping
+ * ---------------------------------------------------------------------------*/
+
+var stdin = process.stdin,
+    inputChunks = [],
+    opts = {};
+
+//stdin.resume();
+stdin.setEncoding('utf8');
+
+stdin.on('data', function (chunk) {
+  inputChunks.push(chunk);
+});
+
+stdin.on('end', function () {
+  var inputJSON = inputChunks.join(),
+      parsedData = JSON.parse(inputJSON),
+      outputJSON = JSON.stringify(parsedData, null, '    ');
+
+  opts = outputJSON;
+});
+
+
 /* -----------------------------------------------------------------------------
  * link proxy
  * ---------------------------------------------------------------------------*/

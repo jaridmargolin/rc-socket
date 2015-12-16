@@ -66,19 +66,17 @@ server.route({
   }
 });
 
-/*
 server.route({
   method: 'POST',
   path: '/link/up',
   handler: function (request, reply) {
     var filePath = path.join(__dirname, 'link.js');
     linkProcess = spawn('node', [filePath]);
-
     linkProcess.stdin.setEncoding('utf-8');
+
     reply().code(204);
   }
 });
-*/
 
 server.route({
   method: 'POST',

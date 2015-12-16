@@ -37,7 +37,7 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                browserName: 'firefox'
+                browserName: 'chrome'
                 //browserName: suite.options.browserArgument
             })
             .build();
@@ -121,10 +121,10 @@ var dumpClientLogger = function() {
 
 // TODO, cmmon pull this out to a library already
 
-var apiUrl = 'localhost'
-  , apiPort = '9997';
+var apiUrl = 'localhost',
+    apiPort = '9997';
 
-var command = function (endpoint, done) {
+var command = function (endpoint) {
     // Set up the request
     var post_req = http.request({
         host: apiUrl,
@@ -137,12 +137,12 @@ var command = function (endpoint, done) {
     post_req.end();
 };
 
-var startSocket = function (done) {
-    command('socket/start', done);
+var startSocket = function () {
+    command('socket/start');
 };
 
-var cleanUp = function (done) {
-    command('socket/stop', done);
+var cleanUp = function () {
+    command('socket/stop');
 };
 
 var startServerSocketPromise = function() {
@@ -151,6 +151,10 @@ var startServerSocketPromise = function() {
 
 var stopServerSocketPromise = function() {
     return Q.fcall(cleanUp, function(){});
+};
+
+var terminateNetworkLink = function() {
+    return Q.fcall(command, 'link/down');
 };
 
 var waitASecond = function(){
@@ -220,6 +224,14 @@ describe('RcSocketIntegration', function () {
             .then(stopServerSocketPromise)
             .then(waitASecond)
             .then(startServerSocketPromise)
+            .then(waitASecond)
+            .then(dumpClientLogger);
+    });
+
+    it('Logs events when the network link fails.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
+            .then(terminateNetworkLink)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
