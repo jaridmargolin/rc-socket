@@ -7,8 +7,7 @@
  * ---------------------------------------------------------------------------*/
 
 // Core
-var spawn = require('child_process').spawn,
-    path  = require('path');
+var http = require('http');
 
 /* -----------------------------------------------------------------------------
  * setup
@@ -120,27 +119,39 @@ var dumpClientLogger = function() {
     });
 };
 
-var socketProcess;
-var startServerSocket = function() {
-    var filePath = path.join(__dirname, '../api/web-socket.js');
+// TODO, cmmon pull this out to a library already
 
-    socketProcess = spawn('node', [filePath]);
+var apiUrl = 'localhost'
+  , apiPort = '9997';
 
-    return socketProcess;
+var command = function (endpoint, done) {
+    // Set up the request
+    var post_req = http.request({
+        host: apiUrl,
+        port: apiPort,
+        path: '/' + endpoint,
+        method: 'POST'
+    }, function (res) { });
+
+    // post the data
+    post_req.end();
+};
+
+var startSocket = function (done) {
+    command('socket/start', done);
+};
+
+var cleanUp = function (done) {
+    command('socket/stop', done);
 };
 
 var startServerSocketPromise = function() {
-    return Q.fcall(startServerSocket);
-};
-
-var stopServerSocket = function() {
-    return socketProcess.kill('SIGINT');
+    return Q.fcall(startSocket, function(){});
 };
 
 var stopServerSocketPromise = function() {
-    return Q.fcall(stopServerSocket);
+    return Q.fcall(cleanUp, function(){});
 };
-
 
 var waitASecond = function(){
     return driver.sleep(1000);
@@ -155,13 +166,13 @@ describe('RcSocketIntegration', function () {
     this.timeout(10000);
 
     beforeEach(function () {
-        startServerSocket();
+        startSocket();
 
         return buildDriver();
     });
 
     afterEach(function () {
-        stopServerSocket();
+        cleanUp();
 
         return driver.quit();
     });
