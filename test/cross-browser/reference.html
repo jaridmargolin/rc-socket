@@ -33,9 +33,10 @@
                     buffer: [],
 
                     debug: function() {
-                        childWin.clientLogger.buffer.push(
-                            arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
-                        );
+                        childWin.clientLogger.buffer.push({
+                            ts: Date.now(),
+                            message: arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
+                        });
                     }
                 };
             }
@@ -48,7 +49,7 @@
 
         if (window.location.search.replace("?", "").length) {
             createRcSocket();
-            childWin.clientLogger.debug('RcSocket', 'start-socket-immediately');
+            childWin.clientLogger.debug('RcSocket', 'startSocketImmediately', ' ');
         }
     </script>
 
