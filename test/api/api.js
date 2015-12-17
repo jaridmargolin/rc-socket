@@ -28,11 +28,13 @@ server.route({
   method: 'POST',
   path: '/socket/start',
   handler: function (request, reply) {
-    var filePath = path.join(__dirname, 'web-socket.js');
-    socketProcess = spawn('node', [filePath], { stdio: 'inherit' });
+    var socketPath = path.join(__dirname, 'web-socket.js');
+    socketProcess = spawn('node', [socketPath], { stdio: 'inherit' });
 
-    filePath = path.join(__dirname, 'link.js');
-    linkProcess = spawn('node', [filePath], { stdio: ['pipe', process.stdout, process.stderr] });
+    // start the link-layer after the socket service starts listening,
+    // as the link-layer requires a socket to bind to
+    var linkPath = path.join(__dirname, 'link.js');
+    linkProcess = spawn('node', [linkPath], { stdio: ['pipe', process.stdout, process.stderr] });
     linkProcess.stdin.setEncoding('utf-8');
 
     reply().code(204);

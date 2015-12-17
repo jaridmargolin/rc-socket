@@ -11,9 +11,9 @@ var net = require('net');
  * process piping
  * ---------------------------------------------------------------------------*/
 
-var stdin = process.stdin,
-    inputChunks = [],
-    opts = {};
+var stdin = process.stdin;
+var inputChunks = [];
+var opts = {};
 
 stdin.setEncoding('utf8');
 

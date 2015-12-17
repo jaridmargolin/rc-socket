@@ -31,7 +31,7 @@ module.exports = function (grunt) {
     } else if (!proc) {
       procs[this.target] = spawn('node', [filePath]);
 
-      if (grunt.verbose) {
+      if (grunt.option('enable-logging')) {
         var logStream = fs.createWriteStream('services.log', {flags: 'a'});
         procs[this.target].stdout.pipe(logStream);
         procs[this.target].stderr.pipe(logStream);
