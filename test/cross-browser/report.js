@@ -201,8 +201,8 @@ var stopServerSocket = function() {
     return Q.fcall(command, 'socket/stop');
 };
 
-var terminateNetworkLink = function() {
-    logMessage('Runner stopLink');
+var lostNetworkLink = function() {
+    logMessage('Runner lostLink');
 
     return Q.fcall(command, 'link/down');
 };
@@ -278,7 +278,7 @@ describe('RcSocketIntegration', function () {
     it('Logs events when the network link fails.', function () {
         return loadAndStartClient()
             .then(waitASecond)
-            .then(terminateNetworkLink)
+            .then(lostNetworkLink)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
