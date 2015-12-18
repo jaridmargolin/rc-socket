@@ -53,7 +53,7 @@ server.route({
 
 server.route({
   method: 'POST',
-  path: '/link/up',
+  path: '/link/start',
   handler: function (request, reply) {
     var filePath = path.join(__dirname, 'link.js');
     linkProcess = spawn('node', [filePath]);
@@ -65,7 +65,7 @@ server.route({
 
 server.route({
   method: 'POST',
-  path: '/link/down',
+  path: '/link/stop',
   handler: function (request, reply) {
     linkProcess.kill('SIGINT');
     reply().code(204);
@@ -74,9 +74,23 @@ server.route({
 
 server.route({
   method: 'POST',
-  path: '/link/drops',
+  path: '/link/down',
   handler: function (request, reply) {
     var cmd = {
+      op: 'drop',
+      drop: 100        // tell the link to drop all packets
+    };
+    linkProcess.stdin.write(JSON.stringify(cmd));
+    reply().code(204);
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/link/lossy',
+  handler: function (request, reply) {
+    var cmd = {
+      op: 'drop',
       drop: 5        // tell the link to drop 5% of packets
     };
     linkProcess.stdin.write(JSON.stringify(cmd));
