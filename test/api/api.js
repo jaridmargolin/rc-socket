@@ -87,6 +87,19 @@ server.route({
 
 server.route({
   method: 'POST',
+  path: '/link/up',
+  handler: function (request, reply) {
+    var cmd = {
+      op: 'drop',
+      drop: 0        // tell the link to allow all packets
+    };
+    linkProcess.stdin.write(JSON.stringify(cmd));
+    reply().code(204);
+  }
+});
+
+server.route({
+  method: 'POST',
   path: '/link/lossy',
   handler: function (request, reply) {
     var cmd = {
