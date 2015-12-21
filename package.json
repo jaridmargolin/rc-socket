@@ -16,15 +16,16 @@
   },
   "main": "dist/common/rc-socket.js",
   "devDependencies": {
-    "easy-build": "~0.2.3",
-    "jquery": "~1.11.0",
     "async": "~0.9.0",
+    "easy-build": "~0.2.3",
     "hapi": "~6.5.1",
-    "ws": "~0.4.31",
-    "proclaim": "~2.0.0",
-    "sinon": "~1.10.1",
+    "jquery": "~1.11.0",
     "portscanner": "~1.0.0",
-    "selenium-webdriver": "~2.48.2"
+    "proclaim": "~2.0.0",
+    "q": "~1.4.1",
+    "selenium-webdriver": "~2.48.2",
+    "sinon": "~1.10.1",
+    "ws": "~0.4.31"
   },
   "license": "MIT"
 }
