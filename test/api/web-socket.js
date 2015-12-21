@@ -13,7 +13,7 @@ var WsServer = require('ws').Server;
  * ---------------------------------------------------------------------------*/
 
 // Create new WebSocket instance
-var wss = new WsServer({ port: 9998 });
+var wss = new WsServer({ port: 9995 });
 
 // Send Reciept - Essentially just an echo
 wss.on('connection', function(ws) {

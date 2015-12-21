@@ -7,7 +7,7 @@
 // core
 var spawn = require('child_process').spawn;
 var path  = require('path');
-
+var fs = require('fs');
 
 /* -----------------------------------------------------------------------------
  * task
@@ -30,6 +30,12 @@ module.exports = function (grunt) {
       proc.kill('SIGINT');
     } else if (!proc) {
       procs[this.target] = spawn('node', [filePath]);
+
+      if (grunt.option('enable-logging')) {
+        var logStream = fs.createWriteStream('services.log', {flags: 'a'});
+        procs[this.target].stdout.pipe(logStream);
+        procs[this.target].stderr.pipe(logStream);
+      }
     }
   });
 

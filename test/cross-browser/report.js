@@ -7,8 +7,7 @@
  * ---------------------------------------------------------------------------*/
 
 // Core
-var spawn = require('child_process').spawn,
-    path  = require('path');
+var http = require('http');
 
 /* -----------------------------------------------------------------------------
  * setup
@@ -16,6 +15,29 @@ var spawn = require('child_process').spawn,
 
 var webdriver = require('selenium-webdriver');
 var Q = require('q');
+
+/* -----------------------------------------------------------------------------
+ * logger
+ * ---------------------------------------------------------------------------*/
+
+var logger = [];
+
+var clearLogger = function() {
+    return Q.fcall(function() {
+        logger = [];
+    });
+};
+
+var logMessage = function(msg) {
+    return Q.fcall(function() {
+        var z = {
+            ts: Date.now(),
+            message: msg
+        };
+
+        return logger.push(z);
+    });
+};
 
 /* -----------------------------------------------------------------------------
  * reusable
@@ -38,7 +60,7 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                browserName: 'firefox'
+                browserName: 'chrome'
                 //browserName: suite.options.browserArgument
             })
             .build();
@@ -48,6 +70,8 @@ var buildDriver = function () {
 };
 
 var refreshWindow = function () {
+    logMessage('Runner refresh');
+
     return driver.navigate().refresh()
         .then(function () {
             return driver.executeScript('document.body.style.background = "red";');
@@ -55,6 +79,8 @@ var refreshWindow = function () {
 };
 
 var closeWindow = function () {
+    logMessage('Runner close');
+
     return driver.close();
 };
 
@@ -92,18 +118,26 @@ var getChildWindow = function () {
 };
 
 var loadClient = function() {
+    logMessage('Runner loadClient');
+
     return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html');
 };
 
 var loadAndStartClient = function() {
+    logMessage('Runner loadAndStart');
+
     return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html?immediate');
 };
 
 var directBrowserAway = function() {
+    logMessage('Runner redirect');
+
     return driver.get('http://0.0.0.0:9999/');
 };
 
 var createRcSocket = function() {
+    logMessage('Runner startClient');
+
     return driver.executeScript('return window.createRcSocket();');
 };
 
@@ -114,36 +148,63 @@ var dumpClientLogger = function() {
                 return driver.executeScript('return window.clientLogger.buffer;');
             })
             .then(function(z) {
-                console.log(z);
+                var allLogs = logger.concat(z);
+                allLogs.sort(function(a, b) {
+                    return a.ts - b.ts;
+                });
+
+                allLogs.map(function(log) {
+                    var d = '[' + new Date(log.ts).toISOString() + ']';
+                    var m = log.message.split(' ');
+
+                    var service = String('    ' + m[0]).slice(-9);
+                    m.shift();
+                    console.log(d + service + ': ' + m.join(' '));
+                });
             })
             .then(getParentWindow);
     });
 };
 
-var socketProcess;
-var startServerSocket = function() {
-    var filePath = path.join(__dirname, '../api/web-socket.js');
-
-    socketProcess = spawn('node', [filePath]);
-
-    return socketProcess;
+var waitASecond = function(){
+    return driver.sleep(1000);
 };
 
-var startServerSocketPromise = function() {
-    return Q.fcall(startServerSocket);
+/* -----------------------------------------------------------------------------
+ * api
+ * ---------------------------------------------------------------------------*/
+
+var apiUrl = 'localhost',
+    apiPort = '9997';
+
+var command = function (endpoint) {
+    var postReq = http.request({
+        host: apiUrl,
+        port: apiPort,
+        path: '/' + endpoint,
+        method: 'POST'
+    }, function (res) { });
+
+    // post the data
+    postReq.end();
+};
+
+var startServerSocket = function() {
+    logMessage('Runner startSocketServer');
+
+    return Q.fcall(command, 'socket/start');
 };
 
 var stopServerSocket = function() {
-    return socketProcess.kill('SIGINT');
+    logMessage('Runner stopSocketServer');
+
+    return Q.fcall(command, 'socket/stop');
 };
 
-var stopServerSocketPromise = function() {
-    return Q.fcall(stopServerSocket);
-};
+var lostNetworkLink = function() {
+    logMessage('Runner lostLink');
 
-
-var waitASecond = function(){
-    return driver.sleep(1000);
+    return Q.fcall(command, 'link/down');
 };
 
 /* -----------------------------------------------------------------------------
@@ -155,15 +216,16 @@ describe('RcSocketIntegration', function () {
     this.timeout(10000);
 
     beforeEach(function () {
-        startServerSocket();
-
-        return buildDriver();
+        return startServerSocket()
+            .then(buildDriver);
     });
 
     afterEach(function () {
-        stopServerSocket();
-
-        return driver.quit();
+        clearLogger();
+        return stopServerSocket()
+            .then(function() {
+                driver.quit();
+            });
     });
 
     it('Logs events when launching new window and creating the RcSocket.', function () {
@@ -180,7 +242,7 @@ describe('RcSocketIntegration', function () {
             .then(dumpClientLogger);
     });
 
-    it('Logs events when the WebSocket is dropped after a redirect.', function () {
+    it('Logs events when the browser is directed away.', function () {
         return loadAndStartClient()
             .then(waitASecond)
             .then(directBrowserAway)
@@ -189,26 +251,34 @@ describe('RcSocketIntegration', function () {
 
     it('Logs events when the window is closed.', function () {
         return loadAndStartClient()
-            .then(refreshWindow)
+            .then(waitASecond)
             .then(closeWindow)
             .then(dumpClientLogger);
     });
 
     it('Logs events when server is initially down and a new WebSocket is being opened.', function () {
-        return stopServerSocketPromise()
+        return stopServerSocket()
             .then(loadAndStartClient)
             .then(waitASecond)
-            .then(startServerSocketPromise)
+            .then(startServerSocket)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
 
-    it('Logs events when the window is closed.', function () {
+    it('Logs events when server is cycled on an active connection.', function () {
         return loadAndStartClient()
             .then(waitASecond)
-            .then(stopServerSocketPromise)
+            .then(stopServerSocket)
             .then(waitASecond)
-            .then(startServerSocketPromise)
+            .then(startServerSocket)
+            .then(waitASecond)
+            .then(dumpClientLogger);
+    });
+
+    it('Logs events when the network link fails.', function () {
+        return loadAndStartClient()
+            .then(waitASecond)
+            .then(lostNetworkLink)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
