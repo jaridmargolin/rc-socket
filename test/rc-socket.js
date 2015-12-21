@@ -224,7 +224,10 @@ describe('RcSocket', function () {
   it('Should force close if RcSocket close method is called.', function (done) {
     var closeSocket = function (done) {
       ws.close();
-      ws.onclose = function () { done(); };
+      ws.onclose = function (evt) {
+        assert.isTrue(evt.forced);
+        done();
+      };
     };
 
     // Run

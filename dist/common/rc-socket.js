@@ -120,6 +120,7 @@ RcSocket.prototype.connect = function () {
 
     this.ws = null;
     if (this.forced) {
+      evt.forced = this.forced;
       this._stateChanged('CLOSED', 'onclose', evt);
     } else if (!this.unload) {
       this._reconnect(evt, hasConnected);
