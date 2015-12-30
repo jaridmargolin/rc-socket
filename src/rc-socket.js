@@ -68,6 +68,11 @@ var RcSocket = function (url, protocols) {
     this.unload = true;
   }.bind(this);
 
+  // Protect against network/ip changes.
+  window.addEventListener('offline', function () {
+    this.refresh();
+  });
+
   // Connect dAwG! - delay to add handlers
   setTimeout(this.connect.bind(this), 0);
 };
