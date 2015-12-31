@@ -36,13 +36,7 @@
                             ts: Date.now(),
                             message: arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
                         });
-                    },
-
-                    dump: function () {
-                        return this.buffer;
-                    },
-
-                    clear: function () { }
+                    }
                 };
             }
 
@@ -56,23 +50,6 @@
                         String(Date.now()),
                         arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
                     );
-                },
-
-                dump: function () {
-                    var buffer = [];
-                    for (var i = 0; i < localStorage.length; i++) {
-                        buffer.push({
-                            ts: parseInt(localStorage.key(i)),
-                            message: localStorage.getItem(localStorage.key(i))
-                        });
-                    }
-
-                    return buffer;
-                },
-
-                clear: function () {
-                    localStorage.clear();
-                    this.dump = function() {}
                 }
             }
         }
@@ -91,6 +68,18 @@
             rc.debug = true;
 
             return rc;
+        };
+
+        var dumpLogger = function() {
+            var buffer = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                buffer.push({
+                    ts: parseInt(localStorage.key(i)),
+                    message: localStorage.getItem(localStorage.key(i))
+                });
+            }
+
+            return buffer;
         };
 
         // Start RcSocket onLoad if the 'immediate' URL param is set
