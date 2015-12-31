@@ -21,6 +21,7 @@ var Q = require('q');
  * ---------------------------------------------------------------------------*/
 
 var logger = [];
+var tsOffset = 0;
 
 var clearLogger = function() {
     return Q.fcall(function() {
@@ -29,15 +30,23 @@ var clearLogger = function() {
 };
 
 var logMessage = function(msg) {
-    // driver.executeScript('return Date.now();').then(function(d) {
-    return Q.fcall(function() {
-        var z = {
-            ts: Date.now(),
-            message: msg
-        };
-
-        return logger.push(z);
+    var timestampPromise = Q.fcall(function() {
+        return Date.now() + tsOffset;
     });
+
+    //if (typeof driver !== 'undefined') {
+    //    timestampPromise = driver.executeScript('return Date.now();');
+    //}
+
+    return timestampPromise
+        .then(function(d) {
+            var z = {
+                ts: d,
+                message: msg
+            };
+
+            return logger.push(z);
+        });
 };
 
 /* -----------------------------------------------------------------------------
@@ -88,7 +97,7 @@ var refreshWindow = function () {
 };
 
 var closeWindow = function () {
-    logMessage('Runner close');
+    logMessage('Runner closeWindow');
 
     return driver.close();
 };
@@ -127,7 +136,7 @@ var getChildWindow = function () {
 };
 
 var loadClient = function() {
-    logMessage('Runner loadClient');
+    logMessage('Runner loadReferencePage');
 
     return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html');
 };
@@ -150,33 +159,22 @@ var createRcSocket = function() {
     return driver.executeScript('return window.createRcSocket();');
 };
 
-var clearClientLogger = function() {
-    var correctWindow = driver;
-    var hasChildWindow = getAllHandles().size > 1;
+var clearLocalStorage = function() {
+    return driver
+        .executeScript('localStorage.clear();');
+};
 
-    if (hasChildWindow) {
-        correctWindow = getChildWindow();
-    }
-
-    return correctWindow
-        .executeScript('return window.clientLogger.clear();')
-        .then(function() {
-            if (hasChildWindow) {
-                return getParentWindow();
-            }
+var synchronizeTimestamps = function() {
+    return driver
+        .executeScript('return Date.now();')
+        .then(function(d) {
+            tsOffset = Date.now() - d;
         });
 };
 
 var dumpClientLogger = function() {
-    var correctWindow = driver;
-    var hasChildWindow = getAllHandles().length > 1;
-
-    if (hasChildWindow) {
-        correctWindow = getChildWindow();
-    }
-
-    return correctWindow
-        .executeScript('return window.clientLogger.dump();')
+    return driver
+        .executeScript('return window.dumpLogger();')
         .then(function(z) {
             var allLogs = logger.concat(z);
             allLogs.sort(function(a, b) {
@@ -192,11 +190,6 @@ var dumpClientLogger = function() {
 
                 console.log(d + service + ': ' + m.join(' '));
             });
-        })
-        .then(function() {
-            if (hasChildWindow) {
-                return getParentWindow();
-            }
         });
 };
 
@@ -252,12 +245,13 @@ describe('RcSocketIntegration', function () {
     beforeEach(function () {
         return startServerSocket()
             .then(buildDriver)
-            .then(clearClientLogger);
+            .then(synchronizeTimestamps);
     });
 
     afterEach(function () {
         clearLogger();
-        return stopServerSocket()
+        return clearLocalStorage()
+            .then(stopServerSocket)
             .then(function() {
                 driver.quit();
             });
@@ -266,6 +260,7 @@ describe('RcSocketIntegration', function () {
     it('Logs events when launching new window and creating the RcSocket.', function () {
         return loadClient()
             .then(createRcSocket)
+            .then(waitASecond)
             .then(dumpClientLogger);
     });
 
@@ -281,6 +276,8 @@ describe('RcSocketIntegration', function () {
         return loadAndStartClient()
             .then(waitASecond)
             .then(directBrowserAway)
+            .then(waitASecond)
+            .then(loadClient)
             .then(dumpClientLogger);
     });
 
@@ -288,6 +285,9 @@ describe('RcSocketIntegration', function () {
         return loadAndStartClient()
             .then(waitASecond)
             .then(closeWindow)
+            .then(waitASecond)
+            .then(buildDriver) // since we closed the window
+            .then(loadClient)  // we need to reopen everything
             .then(dumpClientLogger);
     });
 
@@ -305,7 +305,9 @@ describe('RcSocketIntegration', function () {
             .then(waitASecond)
             .then(stopServerSocket)
             .then(waitASecond)
+            .then(waitASecond)
             .then(startServerSocket)
+            .then(waitASecond)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
