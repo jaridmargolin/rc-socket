@@ -29,6 +29,7 @@ var clearLogger = function() {
 };
 
 var logMessage = function(msg) {
+    // driver.executeScript('return Date.now();').then(function(d) {
     return Q.fcall(function() {
         var z = {
             ts: Date.now(),
@@ -149,29 +150,54 @@ var createRcSocket = function() {
     return driver.executeScript('return window.createRcSocket();');
 };
 
+var clearClientLogger = function() {
+    var correctWindow = driver;
+    var hasChildWindow = getAllHandles().size > 1;
+
+    if (hasChildWindow) {
+        correctWindow = getChildWindow();
+    }
+
+    return correctWindow
+        .executeScript('return window.clientLogger.clear();')
+        .then(function() {
+            if (hasChildWindow) {
+                return getParentWindow();
+            }
+        });
+};
+
 var dumpClientLogger = function() {
-    return driver.sleep(200).then(function(){
-        return getChildWindow()
-            .then(function() {
-                return driver.executeScript('return window.clientLogger.buffer;');
-            })
-            .then(function(z) {
-                var allLogs = logger.concat(z);
-                allLogs.sort(function(a, b) {
-                    return a.ts - b.ts;
-                });
+    var correctWindow = driver;
+    var hasChildWindow = getAllHandles().length > 1;
 
-                allLogs.map(function(log) {
-                    var d = '[' + new Date(log.ts).toISOString() + ']';
-                    var m = log.message.split(' ');
+    if (hasChildWindow) {
+        correctWindow = getChildWindow();
+    }
 
-                    var service = String('    ' + m[0]).slice(-9);
-                    m.shift();
-                    console.log(d + service + ': ' + m.join(' '));
-                });
-            })
-            .then(getParentWindow);
-    });
+    return correctWindow
+        .executeScript('return window.clientLogger.dump();')
+        .then(function(z) {
+            var allLogs = logger.concat(z);
+            allLogs.sort(function(a, b) {
+                return a.ts - b.ts;
+            });
+
+            allLogs.map(function(log) {
+                var d = '[' + new Date(log.ts).toISOString() + ']';
+                var m = log.message.split(' ');
+
+                var service = String('    ' + m[0]).slice(-9);
+                m.shift();
+
+                console.log(d + service + ': ' + m.join(' '));
+            });
+        })
+        .then(function() {
+            if (hasChildWindow) {
+                return getParentWindow();
+            }
+        });
 };
 
 var waitASecond = function(){
@@ -225,7 +251,8 @@ describe('RcSocketIntegration', function () {
 
     beforeEach(function () {
         return startServerSocket()
-            .then(buildDriver);
+            .then(buildDriver)
+            .then(clearClientLogger);
     });
 
     afterEach(function () {
