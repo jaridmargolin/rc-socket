@@ -170,7 +170,7 @@ var synchronizeTimestamps = function() {
         .then(function(d) {
             tsOffset = Date.now() - d;
 
-            console.log('## Timestamp Offset ' + tsOffset)
+            console.log('## Timestamp Offset ' + tsOffset);
         });
 };
 
