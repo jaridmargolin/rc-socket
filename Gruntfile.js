@@ -33,7 +33,7 @@ module.exports = function (grunt) {
     'dev:prehook': ['process:api:start'],
     'dev:posthook': ['process:api:stop'],
 
-    'test:crossbrowser' : ['build', 'assemble', 'connect', 'sauce_tunnel', 'mochaTest', 'sauce_tunnel_stop']
+    'test:crossbrowser' : ['build', 'assemble', 'connect', 'process:api:start', 'sauce_tunnel', 'mochaTest', 'sauce_tunnel_stop', 'process:api:stop']
   });
 
   // Execution order matters

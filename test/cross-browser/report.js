@@ -55,12 +55,20 @@ var buildDriver = function () {
                 build: process.env.TRAVIS_BUILD_NUMBER,
                 username: process.env.SAUCE_USERNAME,
                 accessKey: process.env.SAUCE_ACCESS_KEY,
-                browserName: 'firefox'
+                //platform: 'Windows 7',
+                //browserName: 'firefox',
+                //version: '',
+                platform: 'OS X 10.11',
+                browserName: 'safari',
+                version: '9.0',
+                //version: '11',
+                //browserName: 'internet explorer'
             }).build();
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                browserName: 'chrome'
+                //browserName: 'chrome'
+                browserName: 'safari'
                 //browserName: suite.options.browserArgument
             })
             .build();
@@ -213,7 +221,7 @@ var lostNetworkLink = function() {
 
 describe('RcSocketIntegration', function () {
 
-    this.timeout(10000);
+    this.timeout(10000 * 3);
 
     beforeEach(function () {
         return startServerSocket()
