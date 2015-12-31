@@ -169,6 +169,8 @@ var synchronizeTimestamps = function() {
         .executeScript('return Date.now();')
         .then(function(d) {
             tsOffset = Date.now() - d;
+
+            console.log('## Timestamp Offset ' + tsOffset)
         });
 };
 
