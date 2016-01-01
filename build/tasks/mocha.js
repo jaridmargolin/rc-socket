@@ -15,7 +15,7 @@ module.exports = function (grunt) {
   // I am bypassing this test when running on Travis.
   // Hitting a Mocha crash on Travis which is not reproducible locally.
   // [see Build 56](https://travis-ci.org/firstopinion/rc-socket.js/builds/96867654)
-  if (process.env.TRAVIS === true) {
+  if (process.env.SAUCE_USERNAME !== undefined) {
     return;
   }
 
