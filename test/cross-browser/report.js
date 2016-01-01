@@ -77,8 +77,9 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                //browserName: 'chrome'
-                browserName: 'safari'
+                //browserName: 'phantomjs'
+                browserName: 'chrome'
+                //browserName: 'safari'
                 //browserName: suite.options.browserArgument
             })
             .build();
