@@ -22,27 +22,6 @@
     <script>
         var clientLogger;
 
-        function createWindowLogger() {
-            var childWin;
-            var child = window.open('', 'childLogger');
-            childWin = child.window;
-
-            if (!childWin.clientLogger) {
-                childWin.clientLogger = {
-                    buffer: [],
-
-                    debug: function () {
-                        childWin.clientLogger.buffer.push({
-                            ts: Date.now(),
-                            message: arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
-                        });
-                    }
-                };
-            }
-
-            return childWin.clientLogger;
-        }
-
         function createLocalStorageLogger() {
             return {
                 debug: function() {
@@ -56,11 +35,9 @@
 
         var createRcSocket = function() {
             if(typeof(Storage) !== "undefined") {
-                // Code for localStorage/sessionStorage.
                 clientLogger = createLocalStorageLogger();
             } else {
-                // no Web Storage support, fallback to Child Window buffer
-                clientLogger = createWindowLogger();
+                console.log("no Web Storage support");
             }
 
             var rc = new RcSocket("ws://localhost:9998/");
