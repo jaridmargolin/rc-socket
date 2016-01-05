@@ -30,23 +30,12 @@ var clearLogger = function() {
 };
 
 var logMessage = function(msg) {
-    var timestampPromise = Q.fcall(function() {
-        return Date.now() + tsOffset;
-    });
-
-    //if (typeof driver !== 'undefined') {
-    //    timestampPromise = driver.executeScript('return Date.now();');
-    //}
-
-    return timestampPromise
-        .then(function(d) {
-            var z = {
-                ts: d,
-                message: msg
-            };
-
-            return logger.push(z);
+    return Q.fcall(function() {
+        return logger.push({
+            ts: Date.now() + tsOffset,
+            message: msg
         });
+    });
 };
 
 /* -----------------------------------------------------------------------------
@@ -77,9 +66,9 @@ var buildDriver = function () {
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
-                //browserName: 'phantomjs'
-                browserName: 'chrome'
                 //browserName: 'safari'
+                browserName: 'chrome'
+                //browserName: 'firefox'
                 //browserName: suite.options.browserArgument
             })
             .build();
@@ -101,39 +90,6 @@ var closeWindow = function () {
     logMessage('Runner closeWindow');
 
     return driver.close();
-};
-
-var getAllHandles = function () {
-    return driver.getAllWindowHandles();
-};
-
-var getParentHandle = function () {
-    return getAllHandles()
-        .then(function (handles) {
-            return handles[0];
-        });
-};
-
-var getChildHandle = function () {
-    return getAllHandles()
-        .then(function (handles) {
-            //return the last handle
-            return handles.slice(-1)[0];
-        });
-};
-
-var getParentWindow = function () {
-    return getParentHandle()
-        .then(function (handle) {
-            return driver.switchTo().window(handle);
-        });
-};
-
-var getChildWindow = function () {
-    return getChildHandle()
-        .then(function (handle) {
-            return driver.switchTo().window(handle);
-        });
 };
 
 var loadClient = function() {
