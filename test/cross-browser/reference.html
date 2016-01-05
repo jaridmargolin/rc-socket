@@ -12,8 +12,6 @@
         <!--<link rel="stylesheet" href="../node_modules/easy-build/node_modules/mocha/mocha.css" />-->
     </head>
 
-    <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/loglevel/1.4.0/loglevel.min.js"></script>-->
-
     <!-- content -->
     <div id="workboard" style="position: absolute;"></div>
     <div id="mocha">
@@ -22,34 +20,49 @@
 
     <!-- traces -->
     <script>
-        var childWin;
+        var clientLogger;
+
+        function createLocalStorageLogger() {
+            return {
+                debug: function() {
+                    localStorage.setItem(
+                        String(Date.now()),
+                        arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
+                    );
+                }
+            }
+        }
 
         var createRcSocket = function() {
-            var child = window.open('', 'childLogger');
-            childWin = child.window;
-
-            if (!childWin.clientLogger) {
-                childWin.clientLogger = {
-                    buffer: [],
-
-                    debug: function() {
-                        childWin.clientLogger.buffer.push({
-                            ts: Date.now(),
-                            message: arguments['0'] + ' ' + arguments['1'] + ' ' + arguments['2']
-                        });
-                    }
-                };
+            if(typeof(Storage) !== "undefined") {
+                clientLogger = createLocalStorageLogger();
+            } else {
+                console.log("no Web Storage support");
             }
 
             var rc = new RcSocket("ws://localhost:9998/");
-            rc.logger = childWin.clientLogger.debug;
+            rc.logger = clientLogger.debug;
             rc.debug = true;
+
             return rc;
         };
 
+        var dumpLogger = function() {
+            var buffer = [];
+            for (var i = 0; i < localStorage.length; i++) {
+                buffer.push({
+                    ts: parseInt(localStorage.key(i)),
+                    message: localStorage.getItem(localStorage.key(i))
+                });
+            }
+
+            return buffer;
+        };
+
+        // Start RcSocket onLoad if the 'immediate' URL param is set
         if (window.location.search.replace("?", "").length) {
             createRcSocket();
-            childWin.clientLogger.debug('RcSocket', 'startSocketImmediately', ' ');
+            clientLogger.debug('RcSocket', 'startSocketImmediately', ' ');
         }
     </script>
 

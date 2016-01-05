@@ -21,6 +21,7 @@ var Q = require('q');
  * ---------------------------------------------------------------------------*/
 
 var logger = [];
+var tsOffset = 0;
 
 var clearLogger = function() {
     return Q.fcall(function() {
@@ -30,12 +31,10 @@ var clearLogger = function() {
 
 var logMessage = function(msg) {
     return Q.fcall(function() {
-        var z = {
-            ts: Date.now(),
+        return logger.push({
+            ts: Date.now() + tsOffset,
             message: msg
-        };
-
-        return logger.push(z);
+        });
     });
 };
 
@@ -55,12 +54,21 @@ var buildDriver = function () {
                 build: process.env.TRAVIS_BUILD_NUMBER,
                 username: process.env.SAUCE_USERNAME,
                 accessKey: process.env.SAUCE_ACCESS_KEY,
-                browserName: 'firefox'
+                //platform: 'Windows 7',
+                //browserName: 'firefox',
+                //version: '',
+                platform: 'OS X 10.11',
+                browserName: 'safari',
+                version: '9.0',
+                //version: '11',
+                //browserName: 'internet explorer'
             }).build();
     } else {
         driver = new webdriver.Builder()
             .withCapabilities({
+                //browserName: 'safari'
                 browserName: 'chrome'
+                //browserName: 'firefox'
                 //browserName: suite.options.browserArgument
             })
             .build();
@@ -79,46 +87,13 @@ var refreshWindow = function () {
 };
 
 var closeWindow = function () {
-    logMessage('Runner close');
+    logMessage('Runner closeWindow');
 
     return driver.close();
 };
 
-var getAllHandles = function () {
-    return driver.getAllWindowHandles();
-};
-
-var getParentHandle = function () {
-    return getAllHandles()
-        .then(function (handles) {
-            return handles[0];
-        });
-};
-
-var getChildHandle = function () {
-    return getAllHandles()
-        .then(function (handles) {
-            //return the last handle
-            return handles.slice(-1)[0];
-        });
-};
-
-var getParentWindow = function () {
-    return getParentHandle()
-        .then(function (handle) {
-            return driver.switchTo().window(handle);
-        });
-};
-
-var getChildWindow = function () {
-    return getChildHandle()
-        .then(function (handle) {
-            return driver.switchTo().window(handle);
-        });
-};
-
 var loadClient = function() {
-    logMessage('Runner loadClient');
+    logMessage('Runner loadReferencePage');
 
     return driver.get('http://0.0.0.0:9999/test/cross-browser/reference.html');
 };
@@ -141,29 +116,40 @@ var createRcSocket = function() {
     return driver.executeScript('return window.createRcSocket();');
 };
 
+var clearLocalStorage = function() {
+    return driver
+        .executeScript('localStorage.clear();');
+};
+
+var synchronizeTimestamps = function() {
+    return driver
+        .executeScript('return Date.now();')
+        .then(function(d) {
+            tsOffset = Date.now() - d;
+
+            console.log('## Timestamp Offset ' + tsOffset);
+        });
+};
+
 var dumpClientLogger = function() {
-    return driver.sleep(200).then(function(){
-        return getChildWindow()
-            .then(function() {
-                return driver.executeScript('return window.clientLogger.buffer;');
-            })
-            .then(function(z) {
-                var allLogs = logger.concat(z);
-                allLogs.sort(function(a, b) {
-                    return a.ts - b.ts;
-                });
+    return driver
+        .executeScript('return window.dumpLogger();')
+        .then(function(z) {
+            var allLogs = logger.concat(z);
+            allLogs.sort(function(a, b) {
+                return a.ts - b.ts;
+            });
 
-                allLogs.map(function(log) {
-                    var d = '[' + new Date(log.ts).toISOString() + ']';
-                    var m = log.message.split(' ');
+            allLogs.map(function(log) {
+                var d = '[' + new Date(log.ts).toISOString() + ']';
+                var m = log.message.split(' ');
 
-                    var service = String('    ' + m[0]).slice(-9);
-                    m.shift();
-                    console.log(d + service + ': ' + m.join(' '));
-                });
-            })
-            .then(getParentWindow);
-    });
+                var service = String('    ' + m[0]).slice(-9);
+                m.shift();
+
+                console.log(d + service + ': ' + m.join(' '));
+            });
+        });
 };
 
 var waitASecond = function(){
@@ -213,16 +199,18 @@ var lostNetworkLink = function() {
 
 describe('RcSocketIntegration', function () {
 
-    this.timeout(10000);
+    this.timeout(10000 * 3);
 
     beforeEach(function () {
         return startServerSocket()
-            .then(buildDriver);
+            .then(buildDriver)
+            .then(synchronizeTimestamps);
     });
 
     afterEach(function () {
         clearLogger();
-        return stopServerSocket()
+        return clearLocalStorage()
+            .then(stopServerSocket)
             .then(function() {
                 driver.quit();
             });
@@ -231,6 +219,7 @@ describe('RcSocketIntegration', function () {
     it('Logs events when launching new window and creating the RcSocket.', function () {
         return loadClient()
             .then(createRcSocket)
+            .then(waitASecond)
             .then(dumpClientLogger);
     });
 
@@ -246,6 +235,8 @@ describe('RcSocketIntegration', function () {
         return loadAndStartClient()
             .then(waitASecond)
             .then(directBrowserAway)
+            .then(waitASecond)
+            .then(loadClient)
             .then(dumpClientLogger);
     });
 
@@ -253,6 +244,9 @@ describe('RcSocketIntegration', function () {
         return loadAndStartClient()
             .then(waitASecond)
             .then(closeWindow)
+            .then(waitASecond)
+            .then(buildDriver) // since we closed the window
+            .then(loadClient)  // we need to reopen everything
             .then(dumpClientLogger);
     });
 
@@ -270,7 +264,9 @@ describe('RcSocketIntegration', function () {
             .then(waitASecond)
             .then(stopServerSocket)
             .then(waitASecond)
+            .then(waitASecond)
             .then(startServerSocket)
+            .then(waitASecond)
             .then(waitASecond)
             .then(dumpClientLogger);
     });
