@@ -87,6 +87,10 @@ RcSocket.prototype.connect = function () {
     this.ws = new WebSocket(this.URL);
   }
   
+  // Attach an id to the internal web socket. Could be use for various reasons
+  // but initially being introduced for debugging purposes.
+  this.ws.id = Date.now();
+
   // Update
   this._stateChanged('CONNECTING', 'onconnecting');
 

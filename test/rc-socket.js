@@ -118,6 +118,12 @@ describe('RcSocket', function () {
       done();
     };
 
+    // verify id was added to raw socket
+    var verifyId = function (done) {
+      assert.isNumber(ws.ws.id);
+      done();
+    };
+
     // Run
     async.series([
       connectToSocket,
@@ -126,6 +132,7 @@ describe('RcSocket', function () {
       startSocket,
       assertConnected,
       verifyCount,
+      verifyId,
       cleanUp
     ], done);
   });
