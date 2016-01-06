@@ -53,11 +53,13 @@ var RcSocket = function (url, protocols) {
   this.logger   = console.debug;
 
   // State
-  this.unload   = false;
-  this.forced   = false;
-  this.timedOut = false;
-  this.attempts = 1;
-  this.queue    = [];
+  this.hasUnloaded  = false;
+  this.hasOpened    = false;
+  this.wasForced    = false;
+  this.isRetrying   = false;
+  this.isRefreshing = false;
+  this.attempts     = 1;
+  this.queue        = [];
 
   // Instance vars
   this.protocols = protocols;
@@ -65,7 +67,7 @@ var RcSocket = function (url, protocols) {
 
   // Hack to fix firefox triggering close on leave
   window.onbeforeunload = function () {
-    this.unload = true;
+    this.hasUnloaded = true;
   }.bind(this);
 
   // Connect dAwG! - delay to add handlers
@@ -95,22 +97,24 @@ RcSocket.prototype.connect = function () {
   this._stateChanged('CONNECTING', 'onconnecting');
 
   // Start timer
-  var hasConnected = false,
-      timeout      = this._setTimeout(this.ws);
+  this.connectTimer = setTimeout(function() {
+    this._trigger('ontimeout');
+    this.retry();
+  }.bind(this), this.timeout);
 
   /* ---------------------------------
    * open
    * -------------------------------*/
   this.ws.onopen = function (evt) {
-    clearTimeout(timeout);
+    clearTimeout(this.connectTimer);
 
     // Fix error where close is explicitly called
     // but onopen event is still triggered
-    if (this.forced) {
+    if (this.wasForced) {
       return this.close();
     }
     
-    hasConnected = true;
+    this.hasOpened = true;
     this.attempts = 1;
     this._stateChanged('OPEN', 'onopen', evt);
     this._sendQueued();
@@ -120,14 +124,32 @@ RcSocket.prototype.connect = function () {
    * close
    * -------------------------------*/
   this.ws.onclose = function (evt) {
-    clearTimeout(timeout);
-
+    clearTimeout(this.connectTimer);
     this.ws = null;
-    if (this.forced) {
-      evt.forced = this.forced;
+
+    // Because RcSocket holds state we can pass additional information to
+    // upstream handlers regarding why the socket was closed.
+    evt.forced = this.wasForced;
+    evt.isRetrying = this.isRetrying;
+    evt.isRefreshing = this.isRefreshing;
+
+    // Immediately change state and exit on force close.
+    if (this.wasForced) {
       this._stateChanged('CLOSED', 'onclose', evt);
-    } else if (!this.unload) {
-      this._reconnect(evt, hasConnected);
+
+    // Hack P2: Safegaurd against firefox behavior where close event is
+    // triggered on page navigation and results in an attempted reconnect.
+    } else if (!this.hasUnloaded) {
+      // Was open at some point so we need to trigger close evts
+      // TODO: Wondering it state change should ALWAYS BE CALLED?
+      if (this.hasOpened) {
+        this._trigger('onclose', evt);
+      }
+
+      this.isRetrying = false;
+      this.isRefreshing = false;
+      this.hasOpened = false;
+      this._reconnect();
     }
   }.bind(this);
 
@@ -172,11 +194,21 @@ RcSocket.prototype.send = function (data) {
  * @public
  */
 RcSocket.prototype.close = function () {
-  this.forced = true;
+  this.wasForced = true;
+  this._close();
+};
 
-  if (this.ws) {
-    this.ws.close();
-  }
+
+/**
+ * Additional public API method to refresh the connection if still open
+ * (close, re-open). For example, if the app suspects bad data / missed heart
+ * beats, it can try to refresh.
+ *
+ * @public
+ */
+RcSocket.prototype.retry = function() {
+  this.isRetrying = true;
+  this._close();
 };
 
 
@@ -188,25 +220,22 @@ RcSocket.prototype.close = function () {
  * @public
  */
 RcSocket.prototype.refresh = function() {
-  if (this.ws) {
-    this.ws.close();
-  }
+  this.isRefreshing = true;
+  this._close();
 };
 
 
 /**
- * Set timeout on websocket.
+ * Additional public API method to refresh the connection if still open
+ * (close, re-open). For example, if the app suspects bad data / missed heart
+ * beats, it can try to refresh.
  *
- * @private
- * @param {Object} localWs - Websocket object to set timeout on.
+ * @public
  */
-RcSocket.prototype._setTimeout = function (ws) {
-  return setTimeout(function() {
-    this._trigger('ontimeout');
-    this.timedOut = true;
-    ws.close();
-    this.timedOut = false;
-  }.bind(this), this.timeout);
+RcSocket.prototype._close = function() {
+  if (this.ws) {
+    this.ws.close();
+  }
 };
 
 
@@ -216,14 +245,12 @@ RcSocket.prototype._setTimeout = function (ws) {
  * @public
  * @param {Object} data - data to send via web socket.
  */
-RcSocket.prototype._reconnect = function (evt, hasConnected) {
-  // Was open at some point so we need to trigger close evts
-  if (hasConnected && !this.timedOut) {
-    this._trigger('onclose', evt);
-  }
+RcSocket.prototype._reconnect = function (evt) {
+  var interval = (Math.pow(2, this.attempts) - 1) * 1000;
+  interval = (interval > this.maxRetry) ? this.maxRetry : interval;
 
-  // Reconnect
-  setTimeout(this.connect.bind(this), this._getInterval());
+  this.attempts ++;
+  setTimeout(this.connect.bind(this), interval);
 };
 
 
@@ -258,6 +285,7 @@ RcSocket.prototype._delayQueueSend = function (i, d) {
     this.queue.pop();
   }.bind(this), delay);
 };
+
 
 /**
  * Update state, log, trigger.
@@ -294,21 +322,6 @@ RcSocket.prototype._trigger = function (name) {
   if (this[name]) {
     this[name].apply(root, args);
   }
-};
-
-
-/**
- * Function to generate interval using exponential backoff.
- *
- * @private
- * @returns {Number}
- */
-RcSocket.prototype._getInterval = function () {
-  var interval    = (Math.pow(2, this.attempts) - 1) * 1000;
-  
-  // Another attempt
-  this.attempts ++;
-  return (interval > this.maxRetry) ? this.maxRetry : interval;
 };
 
 
