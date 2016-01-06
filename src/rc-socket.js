@@ -153,20 +153,15 @@ RcSocket.prototype.refresh = function() {
  *   the actual socket.
  */
 RcSocket.prototype.connect = function () {
-  if (this.protocols) {
-    this.ws = new WebSocket(this.url, this.protocols);
-  } else {
-    this.ws = new WebSocket(this.url);
-  }
-
-  // Attach an id to the internal web socket. Could be use for various reasons
-  // but initially being introduced for debugging purposes.
-  this.ws.id = Date.now();
-
+  this.ws = new WebSocket(this.url, this.protocols);
   this.ws.onopen = this._onopen.bind(this);
   this.ws.onclose = this._onclose.bind(this);
   this.ws.onmessage = this._onmessage.bind(this);
   this.ws.onerror = this._onerror.bind(this);
+
+  // Attach an id to the internal web socket. Could be use for various reasons
+  // but initially being introduced for debugging purposes.
+  this.ws.id = Date.now();
 
   this.connectTimer = setTimeout(function() {
     this._trigger('ontimeout');
