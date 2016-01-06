@@ -42,19 +42,19 @@ var RcSocket = function (url, protocols) {
   this.url = url;
   this.protocols = protocols;
 
-  this.debug    = false;
-  this.timeout  = 2500;
+  this.debug = false;
+  this.timeout = 2500;
   this.maxRetry = 1000;
-  this.delay    = 100;
-  this.logger   = console;
+  this.delay = 100;
+  this.logger = console;
 
-  this.hasUnloaded  = false;
-  this.hasOpened    = false;
-  this.wasForced    = false;
-  this.isRetrying   = false;
+  this.hasUnloaded = false;
+  this.hasOpened = false;
+  this.wasForced = false;
+  this.isRetrying = false;
   this.isRefreshing = false;
-  this.attempts     = 1;
-  this.queue        = [];
+  this.attempts = 1;
+  this.queue = [];
 
   // Hack P1: Safegaurd against firefox behavior where close event is
   // triggered on page navigation and results in an attempted reconnect.
@@ -293,11 +293,11 @@ RcSocket.prototype._reconnect = function () {
  * @desc Loop over all queued messages and send.
  */
 RcSocket.prototype._sendQueued = function () {
-  var l = this.queue.length;
-      i = l;
+  var length = this.queue.length;
+  var index = length;
 
-  while (i--) {
-    this._delayQueueSend(i, l - i);
+  while (index--) {
+    this._delayQueueSend(index, length - index);
   }
 };
 
@@ -307,17 +307,15 @@ RcSocket.prototype._sendQueued = function () {
  *
  * @desc Send delayed message to avoid timing issues when sending queued.
  *
- * @param {integer} i - Index of message in queue to send.
- * @param {integer} d - Delay multiplier. Determined by where the index falls
+ * @param {integer} index - Index of message in queue to send.
+ * @param {integer} delayMultiplier Determined by where the index falls
  *   in respect to the entire queue count.
  */
-RcSocket.prototype._delayQueueSend = function (i, d) {
-  var delay = this.delay * d;
-  
+RcSocket.prototype._delayQueueSend = function (index, delayMultiplier) {
   setTimeout(function () {
-    this.send(this.queue[i]);
+    this.send(this.queue[index]);
     this.queue.pop();
-  }.bind(this), delay);
+  }.bind(this), this.delay * delayMultiplier);
 };
 
 
