@@ -70,7 +70,7 @@ var RcSocket = function (url, protocols) {
   }.bind(this);
 
   // Delay connect so that we can immediately add socket handlers.
-  setTimeout(this.connect.bind(this), 0);
+  setTimeout(this._connect.bind(this), 0);
 };
 
 /**
@@ -144,7 +144,7 @@ RcSocket.prototype.refresh = function() {
  * ---------------------------------------------------------------------------*/
 
 /**
- * @public
+ * @private
  * @memberof RcSocket
  *
  * @desc Wrapper around WebSocket creation. By wrapping the raw WebSocket we
@@ -152,7 +152,7 @@ RcSocket.prototype.refresh = function() {
  *   reconnection logic), and then finally proxy the events as if we were a
  *   the actual socket.
  */
-RcSocket.prototype.connect = function () {
+RcSocket.prototype._connect = function () {
   this.ws = new WebSocket(this.url, this.protocols);
   this.ws.onopen = this._onopen.bind(this);
   this.ws.onclose = this._onclose.bind(this);
@@ -285,7 +285,7 @@ RcSocket.prototype._reconnect = function () {
   interval = (interval > this.maxRetry) ? this.maxRetry : interval;
 
   this.attempts ++;
-  setTimeout(this.connect.bind(this), interval);
+  setTimeout(this._connect.bind(this), interval);
 };
 
 

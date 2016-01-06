@@ -18,7 +18,7 @@ define([
 describe('amd - rc-socket.js', function () {
 
   it('Should create a new instance.', function () {
-    var connectStub = sinon.stub(RcSocket.prototype, 'connect');
+    var connectStub = sinon.stub(RcSocket.prototype, '_connect');
 
     var socket = new RcSocket();
     assert.isInstanceOf(socket, RcSocket);
