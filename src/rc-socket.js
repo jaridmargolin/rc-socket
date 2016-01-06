@@ -46,6 +46,9 @@ var root = this;
  * @param {String|Array} protocols - Optional subprotocols.
  */
 var RcSocket = function (url, protocols) {
+  this.url = url;
+  this.protocols = protocols;
+
   this.debug    = false;
   this.timeout  = 2500;
   this.maxRetry = 1000;
@@ -59,9 +62,6 @@ var RcSocket = function (url, protocols) {
   this.isRefreshing = false;
   this.attempts     = 1;
   this.queue        = [];
-
-  this.protocols = protocols;
-  this.URL = url;
 
   // Hack P1: Safegaurd against firefox behavior where close event is
   // triggered on page navigation and results in an attempted reconnect.
@@ -154,9 +154,9 @@ RcSocket.prototype.refresh = function() {
  */
 RcSocket.prototype.connect = function () {
   if (this.protocols) {
-    this.ws = new WebSocket(this.URL, this.protocols);
+    this.ws = new WebSocket(this.url, this.protocols);
   } else {
-    this.ws = new WebSocket(this.URL);
+    this.ws = new WebSocket(this.url);
   }
 
   // Attach an id to the internal web socket. Could be use for various reasons
@@ -367,7 +367,7 @@ RcSocket.prototype._trigger = function (name) {
   args.shift();
 
   if (this.debug || RcSocket.debugAll) {
-    this.logger.apply(root, ['RcSocket', name, this.URL].concat(args));
+    this.logger.apply(root, ['RcSocket', name, this.url].concat(args));
   }
 
   if (this[name]) {
