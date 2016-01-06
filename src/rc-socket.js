@@ -74,99 +74,6 @@ var RcSocket = function (url, protocols) {
 };
 
 /**
- * @public
- * @memberof RcSocket
- *
- * @desc Wrapper around WebSocket creation. By wrapping the raw WebSocket we
- *   have the opportunity to manipulate events, change behavior (like adding
- *   reconnection logic), and then finally proxy the events as if we were a
- *   the actual socket.
- */
-RcSocket.prototype.connect = function () {
-  if (this.protocols) {
-    this.ws = new WebSocket(this.URL, this.protocols);
-  } else {
-    this.ws = new WebSocket(this.URL);
-  }
-
-  // Attach an id to the internal web socket. Could be use for various reasons
-  // but initially being introduced for debugging purposes.
-  this.ws.id = Date.now();
-
-  this.connectTimer = setTimeout(function() {
-    this._trigger('ontimeout');
-    this.retry();
-  }.bind(this), this.timeout);
-
-  this._stateChanged('CONNECTING', 'onconnecting');
-
-  /* ---------------------------------
-   * open
-   * -------------------------------*/
-  this.ws.onopen = function (evt) {
-    clearTimeout(this.connectTimer);
-
-    // Fix error where close is explicitly called but onopen event is still
-    // triggered.
-    if (this.wasForced) {
-      return this.close();
-    }
-    
-    this.hasOpened = true;
-    this.attempts = 1;
-    this._stateChanged('OPEN', 'onopen', evt);
-    this._sendQueued();
-  }.bind(this);
-    
-  /* ---------------------------------
-   * close
-   * -------------------------------*/
-  this.ws.onclose = function (evt) {
-    clearTimeout(this.connectTimer);
-    this.ws = null;
-
-    // Because RcSocket holds state we can pass additional information to
-    // upstream handlers regarding why the socket was closed.
-    evt.forced = this.wasForced;
-    evt.isRetrying = this.isRetrying;
-    evt.isRefreshing = this.isRefreshing;
-
-    // Immediately change state and exit on force close.
-    if (this.wasForced) {
-      this._stateChanged('CLOSED', 'onclose', evt);
-
-    // Hack P2: Safegaurd against firefox behavior where close event is
-    // triggered on page navigation and results in an attempted reconnect.
-    } else if (!this.hasUnloaded) {
-      // Was open at some point so we need to trigger close evts
-      // TODO: Wondering it state change should ALWAYS BE CALLED?
-      if (this.hasOpened) {
-        this._trigger('onclose', evt);
-      }
-
-      this.isRetrying = false;
-      this.isRefreshing = false;
-      this.hasOpened = false;
-      this._reconnect();
-    }
-  }.bind(this);
-
-  /* ---------------------------------
-   * message
-   * -------------------------------*/
-  this.ws.onmessage = function (evt) {
-    this._trigger('onmessage', evt);
-  }.bind(this);
-
-  /* ---------------------------------
-   * error
-   * -------------------------------*/
-  this.ws.onerror = function (evt) {
-    this._trigger('onerror', evt);
-  }.bind(this);
-};
-
-/**
  * @publc
  * @memberof RcSocket
  *
@@ -231,6 +138,130 @@ RcSocket.prototype.refresh = function() {
   this._close();
 };
 
+
+/* -----------------------------------------------------------------------------
+ * WebSocket Management
+ * ---------------------------------------------------------------------------*/
+
+/**
+ * @public
+ * @memberof RcSocket
+ *
+ * @desc Wrapper around WebSocket creation. By wrapping the raw WebSocket we
+ *   have the opportunity to manipulate events, change behavior (like adding
+ *   reconnection logic), and then finally proxy the events as if we were a
+ *   the actual socket.
+ */
+RcSocket.prototype.connect = function () {
+  if (this.protocols) {
+    this.ws = new WebSocket(this.URL, this.protocols);
+  } else {
+    this.ws = new WebSocket(this.URL);
+  }
+
+  // Attach an id to the internal web socket. Could be use for various reasons
+  // but initially being introduced for debugging purposes.
+  this.ws.id = Date.now();
+
+  this.ws.onopen = this._onopen.bind(this);
+  this.ws.onclose = this._onclose.bind(this);
+  this.ws.onmessage = this._onmessage.bind(this);
+  this.ws.onerror = this._onerror.bind(this);
+
+  this.connectTimer = setTimeout(function() {
+    this._trigger('ontimeout');
+    this.retry();
+  }.bind(this), this.timeout);
+
+  this._stateChanged('CONNECTING', 'onconnecting');
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Timeout cleanup, state management, and queue handling.
+ *
+ * @param {Object} evt - WebSocket onopen evt.
+ */
+RcSocket.prototype._onopen = function (evt) {
+  clearTimeout(this.connectTimer);
+
+  // Fix error where close is explicitly called but onopen event is still
+  // triggered.
+  if (this.wasForced) {
+    return this.close();
+  }
+
+  this.hasOpened = true;
+  this.attempts = 1;
+  this._stateChanged('OPEN', 'onopen', evt);
+  this._sendQueued();
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Responsible for interpretting the various possible close types (force,
+ *   retry, refresh, etc...) and reconnecting/proxying events accordinly.
+ *
+ * @param {Object} evt - WebSocket onclose evt.
+ */
+RcSocket.prototype._onclose = function (evt) {
+  clearTimeout(this.connectTimer);
+  this.ws = null;
+
+  // Because RcSocket holds state we can pass additional information to
+  // upstream handlers regarding why the socket was closed.
+  evt.forced = this.wasForced;
+  evt.isRetrying = this.isRetrying;
+  evt.isRefreshing = this.isRefreshing;
+
+  // Immediately change state and exit on force close.
+  if (this.wasForced) {
+    this._stateChanged('CLOSED', 'onclose', evt);
+
+  // Hack P2: Safegaurd against firefox behavior where close event is
+  // triggered on page navigation and results in an attempted reconnect.
+  } else if (!this.hasUnloaded) {
+    // Was open at some point so we need to trigger close evts
+    // TODO: Wondering it state change should ALWAYS BE CALLED?
+    if (this.hasOpened) {
+      this._trigger('onclose', evt);
+    }
+
+    this.isRetrying = false;
+    this.isRefreshing = false;
+    this.hasOpened = false;
+    this._reconnect();
+  }
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Simple proxy for onmessage event.
+ *
+ * @param {Object} evt - WebSocket onmessage evt.
+ */
+RcSocket.prototype._onmessage = function (evt) {
+  this._trigger('onmessage', evt);
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Simple proxy for onerror event.
+ *
+ * @param {Object} evt - WebSocket onerror evt.
+ */
+RcSocket.prototype._onerror = function (evt) {
+  this._trigger('onerror', evt);
+};
+
 /**
  * @private
  * @memberof RcSocket
@@ -261,6 +292,11 @@ RcSocket.prototype._reconnect = function () {
   this.attempts ++;
   setTimeout(this.connect.bind(this), interval);
 };
+
+
+/* -----------------------------------------------------------------------------
+ * Queue
+ * ---------------------------------------------------------------------------*/
 
 /**
  * @private
@@ -295,6 +331,11 @@ RcSocket.prototype._delayQueueSend = function (i, d) {
     this.queue.pop();
   }.bind(this), delay);
 };
+
+
+/* -----------------------------------------------------------------------------
+ * Helpers
+ * ---------------------------------------------------------------------------*/
 
 /**
  * @private
@@ -333,12 +374,6 @@ RcSocket.prototype._trigger = function (name) {
     this[name].apply(root, args);
   }
 };
-
-/**
- * Setting this to true is the equivalent of setting all instances of
- * RcSocket.debug to true.
- */
-RcSocket.debugAll = false;
 
 
 /* -----------------------------------------------------------------------------
