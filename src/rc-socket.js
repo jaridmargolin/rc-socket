@@ -1,7 +1,5 @@
 /*!
  * rc-socket.js:
- * 
- * Copyright (c) 2014
  * Originally adapted from: https://github.com/joewalnes/reconnecting-websocket
  */
 
@@ -30,29 +28,30 @@ var root = this;
  * ---------------------------------------------------------------------------*/
 
 /**
- * This behaves like a WebSocket in every way, except if it fails to connect,
- * or it gets disconnected, it will use an exponential backoff until it
- * succesfully connects again.
+ * @global
+ * @public
+ * @constructor
+ *
+ * @name RcSocket
+ * @desc This behaves like a WebSocket in every way, except if it fails to
+ * connect, or it gets disconnected, it will use an exponential backoff until
+ * it succesfully connects again.
  *
  * It is API compatible with the standard WebSocket API.
  *
  * @example
  * var ws = new ReconnectingWebsocket(wss://host);
  *
- * @public
- * @constructor
  * @param {String} url - Url to connect to.
  * @param {String|Array} protocols - Optional subprotocols.
  */
 var RcSocket = function (url, protocols) {
-  // Defaults
   this.debug    = false;
   this.timeout  = 2500;
   this.maxRetry = 1000;
   this.delay    = 100;
   this.logger   = console.debug;
 
-  // State
   this.hasUnloaded  = false;
   this.hasOpened    = false;
   this.wasForced    = false;
@@ -61,46 +60,45 @@ var RcSocket = function (url, protocols) {
   this.attempts     = 1;
   this.queue        = [];
 
-  // Instance vars
   this.protocols = protocols;
   this.URL = url;
 
-  // Hack to fix firefox triggering close on leave
+  // Hack P1: Safegaurd against firefox behavior where close event is
+  // triggered on page navigation and results in an attempted reconnect.
   window.onbeforeunload = function () {
     this.hasUnloaded = true;
   }.bind(this);
 
-  // Connect dAwG! - delay to add handlers
+  // Delay connect so that we can immediately add socket handlers.
   setTimeout(this.connect.bind(this), 0);
 };
 
-
 /**
- * Wrapper around websocket.
+ * @public
+ * @memberof RcSocket
  *
- * @private
- * @param {Number} reconnectAttempt - Name of event to fire.
+ * @desc Wrapper around WebSocket creation. By wrapping the raw WebSocket we
+ *   have the opportunity to manipulate events, change behavior (like adding
+ *   reconnection logic), and then finally proxy the events as if we were a
+ *   the actual socket.
  */
 RcSocket.prototype.connect = function () {
-  // New connecting websocket
   if (this.protocols) {
     this.ws = new WebSocket(this.URL, this.protocols);
   } else {
     this.ws = new WebSocket(this.URL);
   }
-  
+
   // Attach an id to the internal web socket. Could be use for various reasons
   // but initially being introduced for debugging purposes.
   this.ws.id = Date.now();
 
-  // Update
-  this._stateChanged('CONNECTING', 'onconnecting');
-
-  // Start timer
   this.connectTimer = setTimeout(function() {
     this._trigger('ontimeout');
     this.retry();
   }.bind(this), this.timeout);
+
+  this._stateChanged('CONNECTING', 'onconnecting');
 
   /* ---------------------------------
    * open
@@ -108,8 +106,8 @@ RcSocket.prototype.connect = function () {
   this.ws.onopen = function (evt) {
     clearTimeout(this.connectTimer);
 
-    // Fix error where close is explicitly called
-    // but onopen event is still triggered
+    // Fix error where close is explicitly called but onopen event is still
+    // triggered.
     if (this.wasForced) {
       return this.close();
     }
@@ -168,54 +166,63 @@ RcSocket.prototype.connect = function () {
   }.bind(this);
 };
 
-
 /**
- * Wrapper around ws.send that adds data to queue if socket is not ready.
+ * @publc
+ * @memberof RcSocket
  *
- * @public
+ * @desc Wrapper around ws.send that adds queue functionality when socket is
+ *   not in a connected readyState.
+ *
+ * @example
+ * socket.send({ prop: 'val' });
+ *
  * @param {Object} data - data to send via web socket.
  */
 RcSocket.prototype.send = function (data) {
-  // If ready to send
+  // TODO: Seems like we should be checking if readyState is connected?
   if (this.ws && this.readyState) {
     return this.ws.send(data);
   }
 
-  // Else queue - We are adding to the end of the array
-  // so that when we send queued messages we can loop through
-  // in reverse and remove queued as we go.
+  // Add data to end of queue so that when we send queued messages we can loop
+  // through in reverse and remove queued as we go.
   this.queue.unshift(data);
 };
 
-
 /**
- * Function to generate interval using exponential backoff
+ * @publc
+ * @memberof RcSocket
  *
- * @public
+ * @desc Explicitly close socket. Overrides default RcSocket reconnection logic.
+ *
+ * @example
+ * socket.close();
  */
 RcSocket.prototype.close = function () {
   this.wasForced = true;
   this._close();
 };
 
-
 /**
- * Additional public API method to refresh the connection if still open
- * (close, re-open). For example, if the app suspects bad data / missed heart
- * beats, it can try to refresh.
+ * @publc
+ * @memberof RcSocket
  *
- * @public
+ * @desc Retry is intended to be called when the socket has yet to connect.
+ *   Rather than letting it set indefinetely, we close the socket after a
+ *   specified timeout and attempt to reconnect.
  */
 RcSocket.prototype.retry = function() {
   this.isRetrying = true;
   this._close();
 };
 
-
 /**
- * Additional public API method to refresh the connection if still open
- * (close, re-open). For example, if the app suspects bad data / missed heart
- * beats, it can try to refresh.
+ * @publc
+ * @memberof RcSocket
+ *
+ * @desc Refresh the connection if open (close, re-open). If the app suspects
+ *   the socket is stale (occurs when changing from wifi -> carrier or vice
+ *   versa), this method will close the existing socket and reconnect.
  *
  * @public
  */
@@ -224,13 +231,14 @@ RcSocket.prototype.refresh = function() {
   this._close();
 };
 
-
 /**
- * Additional public API method to refresh the connection if still open
- * (close, re-open). For example, if the app suspects bad data / missed heart
- * beats, it can try to refresh.
+ * @private
+ * @memberof RcSocket
  *
- * @public
+ * @desc Helper around ws.close to ensure ws exists. If it does not exist we
+ *   fail silently. This seemed logical as closing the socket would have the
+ *   same effect as if the socket never existed. In other words no matter what
+ *   happens in this method the net effect will always be the same.
  */
 RcSocket.prototype._close = function() {
   if (this.ws) {
@@ -238,14 +246,15 @@ RcSocket.prototype._close = function() {
   }
 };
 
-
 /**
- * Wrapper around ws.send that adds data to queue if socket is not ready.
+ * @private
+ * @memberof RcSocket
  *
- * @public
- * @param {Object} data - data to send via web socket.
+ * @desc Call connect after a delayed timeout. The timeout is calculated using
+ *   expotential backoff. As connect attempts increase, the time between connect
+ *   attempts will grow (up to a specified maxRetry).
  */
-RcSocket.prototype._reconnect = function (evt) {
+RcSocket.prototype._reconnect = function () {
   var interval = (Math.pow(2, this.attempts) - 1) * 1000;
   interval = (interval > this.maxRetry) ? this.maxRetry : interval;
 
@@ -253,11 +262,11 @@ RcSocket.prototype._reconnect = function (evt) {
   setTimeout(this.connect.bind(this), interval);
 };
 
-
 /**
- * Loop over all queued messages and send.
- *
  * @private
+ * @memberof RcSocket
+ *
+ * @desc Loop over all queued messages and send.
  */
 RcSocket.prototype._sendQueued = function () {
   var l = this.queue.length;
@@ -268,14 +277,15 @@ RcSocket.prototype._sendQueued = function () {
   }
 };
 
-
 /**
- * Send delayed message to avoid timing
- * issues when sending queued.
- *
  * @private
+ * @memberof RcSocket
  *
- * @param - Id/order of message to send.
+ * @desc Send delayed message to avoid timing issues when sending queued.
+ *
+ * @param {integer} i - Index of message in queue to send.
+ * @param {integer} d - Delay multiplier. Determined by where the index falls
+ *   in respect to the entire queue count.
  */
 RcSocket.prototype._delayQueueSend = function (i, d) {
   var delay = this.delay * d;
@@ -286,11 +296,12 @@ RcSocket.prototype._delayQueueSend = function (i, d) {
   }.bind(this), delay);
 };
 
-
 /**
- * Update state, log, trigger.
- *
  * @private
+ * @memberof RcSocket
+ *
+ * @desc Update state, log, trigger.
+ *
  * @param {String} state - String representing WebSocket.
  * @param {String} name - String of the event name.
  * @param {Object} evt - Event object.
@@ -302,28 +313,26 @@ RcSocket.prototype._stateChanged = function (state) {
   this._trigger.apply(this, args.slice(1, args.length));
 };
 
-
 /**
- * Convenience method for semantically calling handlers.
- *
  * @private
+ * @memberof RcSocket
+ *
+ * @desc Convenience method for semantically calling handlers.
+ *
  * @param {String} name - Name of event to fire.
  */
 RcSocket.prototype._trigger = function (name) {
   var args = Array.prototype.slice.call(arguments, 0);
   args.shift();
 
-  // Log
   if (this.debug || RcSocket.debugAll) {
     this.logger.apply(root, ['RcSocket', name, this.URL].concat(args));
   }
 
-  // Trigger
   if (this[name]) {
     this[name].apply(root, args);
   }
 };
-
 
 /**
  * Setting this to true is the equivalent of setting all instances of
