@@ -7,13 +7,6 @@ define(function () {
 
 
 /* -----------------------------------------------------------------------------
- * scope
- * ---------------------------------------------------------------------------*/
-
-var root = this;
-
-
-/* -----------------------------------------------------------------------------
  * export false if WebSocket is hixie
  * http://stackoverflow.com/questions/17849517/check-to-see-if-websocket-is-hixie-client-side
  * ---------------------------------------------------------------------------*/
@@ -53,7 +46,7 @@ var RcSocket = function (url, protocols) {
   this.timeout  = 2500;
   this.maxRetry = 1000;
   this.delay    = 100;
-  this.logger   = console.debug;
+  this.logger   = console;
 
   this.hasUnloaded  = false;
   this.hasOpened    = false;
@@ -342,11 +335,9 @@ RcSocket.prototype._delayQueueSend = function (i, d) {
  * @param {String} name - String of the event name.
  * @param {Object} evt - Event object.
  */
-RcSocket.prototype._stateChanged = function (state) {
+RcSocket.prototype._stateChanged = function (state, evtName, evt) {
   this.readyState = WebSocket[state];
-
-  var args = Array.prototype.slice.call(arguments, 0);
-  this._trigger.apply(this, args.slice(1, args.length));
+  this._trigger(evtName, evt);
 };
 
 /**
@@ -355,18 +346,16 @@ RcSocket.prototype._stateChanged = function (state) {
  *
  * @desc Convenience method for semantically calling handlers.
  *
- * @param {String} name - Name of event to fire.
+ * @param {String} evtName - Name of event to fire.
+ * @param {Object} evt - Raw WebSocket evt we are proxying.
  */
-RcSocket.prototype._trigger = function (name) {
-  var args = Array.prototype.slice.call(arguments, 0);
-  args.shift();
-
+RcSocket.prototype._trigger = function (evtName, evt) {
   if (this.debug || RcSocket.debugAll) {
-    this.logger.apply(root, ['RcSocket', name, this.url].concat(args));
+    this.logger.debug('RcSocket', evtName, this.url, evt);
   }
 
-  if (this[name]) {
-    this[name].apply(root, args);
+  if (this[evtName]) {
+    this[evtName](evt);
   }
 };
 
