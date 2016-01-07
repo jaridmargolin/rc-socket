@@ -250,7 +250,7 @@ describe('RcSocket', function () {
 
   it('Should call close if forced is true and WebSocket onopen handler is called.', function (done) {
     var setForced = function (done) {
-      ws.forced = true;
+      ws.wasForced = true;
       done();
     };
 

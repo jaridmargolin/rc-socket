@@ -41,7 +41,7 @@
             }
 
             var rc = new RcSocket("ws://localhost:9998/");
-            rc.logger = clientLogger.debug;
+            rc.logger = clientLogger;
             rc.debug = true;
 
             return rc;
