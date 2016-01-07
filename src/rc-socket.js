@@ -67,7 +67,7 @@ var RcSocket = function (url, protocols) {
 };
 
 /**
- * @publc
+ * @public
  * @memberof RcSocket
  *
  * @desc Wrapper around ws.send that adds queue functionality when socket is
@@ -90,7 +90,7 @@ RcSocket.prototype.send = function (data) {
 };
 
 /**
- * @publc
+ * @public
  * @memberof RcSocket
  *
  * @desc Explicitly close socket. Overrides default RcSocket reconnection logic.
@@ -104,7 +104,7 @@ RcSocket.prototype.close = function () {
 };
 
 /**
- * @publc
+ * @public
  * @memberof RcSocket
  *
  * @desc Retry is intended to be called when the socket has yet to connect.
@@ -117,7 +117,7 @@ RcSocket.prototype.retry = function() {
 };
 
 /**
- * @publc
+ * @public
  * @memberof RcSocket
  *
  * @desc Refresh the connection if open (close, re-open). If the app suspects
