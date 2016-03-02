@@ -17,8 +17,9 @@ var wss = new WsServer({ port: 9995 });
 
 // Send Reciept - Essentially just an echo
 wss.on('connection', function(ws) {
-  ws.on('message', function(message) {
-    if (message === 'test') {
+  ws.on('message', function(data) {
+    data = JSON.parse(data);
+    if (data.msg === 'test') {
       ws.send(JSON.stringify({ msg: 'receipt' }));
     }
   });

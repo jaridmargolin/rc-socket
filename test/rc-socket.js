@@ -183,8 +183,8 @@ describe('RcSocket', function () {
 
     // Very events were all called
     var sendMessages = function (done) {
-      ws.send('test');
-      ws.send('test');
+      ws.send({ msg: 'test' });
+      ws.send({ msg: 'test' });
       done();
     };
 
@@ -192,7 +192,7 @@ describe('RcSocket', function () {
     var assertReciepts = function (done) {
       ws.onmessage = function () {
         count ++;
-        if (count = 2) {
+        if (count === 2) {
           done();
         }
       };

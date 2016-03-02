@@ -197,6 +197,7 @@ RcSocket.prototype._onopen = function (evt) {
  * @param {Object} evt - WebSocket onclose evt.
  */
 RcSocket.prototype._onclose = function (evt) {
+  clearInterval(this.queueInterval);
   clearTimeout(this.connectTimer);
   this.ws = null;
 
@@ -293,29 +294,30 @@ RcSocket.prototype._reconnect = function () {
  * @desc Loop over all queued messages and send.
  */
 RcSocket.prototype._sendQueued = function () {
-  var length = this.queue.length;
-  var index = length;
-
-  while (index--) {
-    this._delayQueueSend(index, length - index);
+  if (!this.queue.length) {
+    return;
   }
+
+  this.queueInterval = setInterval(this._sendFromTail.bind(this), this.delay);
+  this._sendFromTail();
 };
 
 /**
  * @private
  * @memberof RcSocket
  *
- * @desc Send delayed message to avoid timing issues when sending queued.
- *
- * @param {integer} index - Index of message in queue to send.
- * @param {integer} delayMultiplier Determined by where the index falls
- *   in respect to the entire queue count.
+ * @desc Send message from tail of queue.
  */
-RcSocket.prototype._delayQueueSend = function (index, delayMultiplier) {
-  setTimeout(function () {
-    this.send(this.queue[index]);
-    this.queue.pop();
-  }.bind(this), this.delay * delayMultiplier);
+RcSocket.prototype._sendFromTail = function () {
+  var msg = this.queue.pop();
+
+  if (this.ws) {
+    this.ws.send(JSON.stringify(msg));
+  }
+
+  if (!this.queue.length) {
+    clearInterval(this.queueInterval);
+  }
 };
 
 
