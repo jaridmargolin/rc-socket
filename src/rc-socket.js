@@ -80,13 +80,11 @@ var RcSocket = function (url, protocols) {
  */
 RcSocket.prototype.send = function (data) {
   // TODO: Seems like we should be checking if readyState is connected?
-  if (this.ws && this.readyState) {
-    return this.ws.send(data);
-  }
-
-  // Add data to end of queue so that when we send queued messages we can loop
-  // through in reverse and remove queued as we go.
-  this.queue.unshift(data);
+  // If the queue is actively being process we will move this send to be
+  // processed within the queue cycle.
+  return this.ws && this.readyState && !this.queue.length
+    ? this.ws.send(data)
+    : this._addToQueue(data);
 };
 
 /**
@@ -291,6 +289,30 @@ RcSocket.prototype._reconnect = function () {
  * @private
  * @memberof RcSocket
  *
+ * @desc Add data to queue. Overwrite this if we wanted to add additional rules
+ *   about what can be added to the queue.
+ *
+ * @param {Object} data - Data to add to queue.
+ */
+RcSocket.prototype._addToQueue = function (data) {
+  this.queue.unshift(data);
+  return data;
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Remove room from tail of queue.
+ */
+RcSocket.prototype._popFromQueue = function () {
+  return this.queue.pop();
+};
+
+/**
+ * @private
+ * @memberof RcSocket
+ *
  * @desc Loop over all queued messages and send.
  */
 RcSocket.prototype._sendQueued = function () {
@@ -309,7 +331,7 @@ RcSocket.prototype._sendQueued = function () {
  * @desc Send message from tail of queue.
  */
 RcSocket.prototype._sendFromTail = function () {
-  var msg = this.queue.pop();
+  var msg = this._popFromQueue();
 
   if (this.ws) {
     this.ws.send(JSON.stringify(msg));
