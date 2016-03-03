@@ -338,7 +338,7 @@ RcSocket.prototype._reconnect = function () {
  * @param {Object} data - Data to add to queue.
  */
 RcSocket.prototype._addToQueue = function (data) {
-  this.queue.unshift(data);
+  this.queue.push(data);
   return data;
 };
 
@@ -348,8 +348,8 @@ RcSocket.prototype._addToQueue = function (data) {
  *
  * @desc Remove room from tail of queue.
  */
-RcSocket.prototype._popFromQueue = function () {
-  return this.queue.pop();
+RcSocket.prototype._shiftFromQueue = function () {
+  return this.queue.shift();
 };
 
 /**
@@ -363,8 +363,8 @@ RcSocket.prototype._sendQueued = function () {
     return;
   }
 
-  this.queueInterval = setInterval(this._sendFromTail.bind(this), this.delay);
-  this._sendFromTail();
+  this.queueInterval = setInterval(this._sendFromHead.bind(this), this.delay);
+  this._sendFromHead();
 };
 
 /**
@@ -373,8 +373,8 @@ RcSocket.prototype._sendQueued = function () {
  *
  * @desc Send message from tail of queue.
  */
-RcSocket.prototype._sendFromTail = function () {
-  var msg = this._popFromQueue();
+RcSocket.prototype._sendFromHead = function () {
+  var msg = this._shiftFromQueue();
 
   if (this.ws) {
     this.ws.send(JSON.stringify(msg));
