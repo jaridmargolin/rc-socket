@@ -82,7 +82,7 @@ RcSocket.prototype.send = function (data) {
   // If the queue is actively being process we will move this send to be
   // processed within the queue cycle.
   return this.ws && this.readyState && !this.queue.length
-    ? this.ws.send(JSON.stringify(data))
+    ? this._send(data)
     : this._addToQueue(data);
 };
 
@@ -323,6 +323,18 @@ RcSocket.prototype._reconnect = function () {
   setTimeout(this._connect.bind(this), interval);
 };
 
+/**
+ * @private
+ * @memberof RcSocket
+ *
+ * @desc Wrapper around ws send to make sure all data is sent in correct format.
+ */
+RcSocket.prototype._send = function (data) {
+  if (this.ws) {
+    this.ws.send(JSON.stringify(data));
+  }
+};
+
 
 /* -----------------------------------------------------------------------------
  * Queue
@@ -374,11 +386,7 @@ RcSocket.prototype._sendQueued = function () {
  * @desc Send message from tail of queue.
  */
 RcSocket.prototype._sendFromHead = function () {
-  var msg = this._shiftFromQueue();
-
-  if (this.ws) {
-    this.ws.send(JSON.stringify(msg));
-  }
+  this._send(this._shiftFromQueue());
 
   if (!this.queue.length) {
     clearInterval(this.queueInterval);
