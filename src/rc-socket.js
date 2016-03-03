@@ -52,7 +52,6 @@ var RcSocket = function (url, protocols) {
   this.hasOpened = false;
   this.wasForced = false;
   this.isRetrying = false;
-  this.isRefreshing = false;
   this.attempts = 1;
   this.queue = [];
 
@@ -83,7 +82,7 @@ RcSocket.prototype.send = function (data) {
   // If the queue is actively being process we will move this send to be
   // processed within the queue cycle.
   return this.ws && this.readyState && !this.queue.length
-    ? this.ws.send(data)
+    ? this.ws.send(JSON.stringify(data))
     : this._addToQueue(data);
 };
 
@@ -99,6 +98,51 @@ RcSocket.prototype.send = function (data) {
 RcSocket.prototype.close = function () {
   this.wasForced = true;
   this._close();
+};
+
+/**
+ * @public
+ * @memberof RcSocket
+ *
+ * @desc Hard kill by cleaning up all handlers.
+ *
+ * @example
+ * socket.kill();
+ */
+RcSocket.prototype.killSocket = function () {
+  this.ws.onopen = null;
+  this.ws.onclose = null;
+  this.ws.onmessage = null;
+  this.ws.onerror = null;
+
+  this.close();
+  delete this.ws;
+};
+
+/**
+ * @public
+ * @memberof RcSocket
+ *
+ * @desc Reset socket to initial state.
+ *
+ * @example
+ * socket.reset();
+ *
+ * @param {Array} queue - Optionally reset with a given queue.
+ */
+RcSocket.prototype.reset = function (queue) {
+  // reset internal state
+  clearInterval(this.queueInterval);
+  clearTimeout(this.connectTimer);
+
+  this.queueInterval = null;
+  this.connectTimer = null;
+  this.hasUnloaded = false;
+  this.hasOpened = false;
+  this.wasForced = false;
+  this.isRetrying = false;
+  this.attempts = 1;
+  this.queue = queue || [];
 };
 
 /**
@@ -124,9 +168,10 @@ RcSocket.prototype.retry = function() {
  *
  * @public
  */
-RcSocket.prototype.refresh = function() {
-  this.isRefreshing = true;
-  this._close();
+RcSocket.prototype.reboot = function() {
+  this.killSocket();
+  this.reset(this.queue);
+  this._connect();
 };
 
 
@@ -190,7 +235,7 @@ RcSocket.prototype._onopen = function (evt) {
  * @memberof RcSocket
  *
  * @desc Responsible for interpretting the various possible close types (force,
- *   retry, refresh, etc...) and reconnecting/proxying events accordinly.
+ *   retry, etc...) and reconnecting/proxying events accordinly.
  *
  * @param {Object} evt - WebSocket onclose evt.
  */
@@ -203,7 +248,6 @@ RcSocket.prototype._onclose = function (evt) {
   // upstream handlers regarding why the socket was closed.
   evt.forced = this.wasForced;
   evt.isRetrying = this.isRetrying;
-  evt.isRefreshing = this.isRefreshing;
 
   // Immediately change state and exit on force close.
   if (this.wasForced) {
@@ -219,7 +263,6 @@ RcSocket.prototype._onclose = function (evt) {
     }
 
     this.isRetrying = false;
-    this.isRefreshing = false;
     this.hasOpened = false;
     this._reconnect();
   }

@@ -137,12 +137,11 @@ describe('RcSocket', function () {
     ], done);
   });
 
-  it('Should close and reconnect socket on refresh.', function (done) {
+  it('Should close and reconnect socket on reboot.', function (done) {
     var triggers = {};
 
-    // Call refresh method of socket
-    var refreshSocket = function (done) {
-      ws.refresh();
+    var rebootSocket = function (done) {
+      ws.reboot();
       done();
     };
 
@@ -159,7 +158,7 @@ describe('RcSocket', function () {
 
     // Verify close and open were called.
     var verifyExecution = function (done) {
-      assert.ok(triggers.onclose);
+      assert.notOk(triggers.onclose);
       assert.ok(triggers.onopen);
       done();
     };
@@ -170,7 +169,7 @@ describe('RcSocket', function () {
       connectToSocket,
       assertConnected,
       addExecutionSpies,
-      refreshSocket,
+      rebootSocket,
       assertConnected,
       verifyExecution,
       cleanUp
@@ -274,6 +273,58 @@ describe('RcSocket', function () {
       setForced,
       callOnopen,
       assertClosed,
+      cleanUp
+    ], done);
+  });
+
+  it('Should silently kill the socket.', function (done) {
+    var killSocket = function (done) {
+      ws.killSocket();
+      done();
+    };
+
+    var assertKilled = function (done) {
+      assert.notOk(ws.ws);
+      done();
+    };
+
+    // Run
+    async.series([
+      startSocket,
+      connectToSocket,
+      assertConnected,
+      killSocket,
+      assertKilled,
+      cleanUp
+    ], done);
+  });
+
+  it('Should reset socket to its initial state.', function (done) {
+    var queue = [];
+
+    var resetRcSocket = function (done) {
+      ws.reset(queue);
+      done();
+    };
+
+    var assertReset = function (done) {
+      assert.notOk(ws.connectTimer);
+      assert.isFalse(ws.hasUnloaded);
+      assert.isFalse(ws.hasOpened);
+      assert.isFalse(ws.wasForced);
+      assert.isFalse(ws.isRetrying);
+      assert.equal(ws.attempts, 1);
+      assert.equal(ws.queue, queue);
+      done();
+    };
+
+    // Run
+    async.series([
+      startSocket,
+      connectToSocket,
+      assertConnected,
+      resetRcSocket,
+      assertReset,
       cleanUp
     ], done);
   });
