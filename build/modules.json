@@ -1,8 +1,10 @@
 {
-  "async"    : "/node_modules/async/lib/async",
-  "jquery"   : "/node_modules/jquery/dist/jquery",
-  "proclaim" : "/node_modules/proclaim/lib/proclaim",
-  "sinon"    : "/node_modules/sinon/pkg/sinon"
+  "async": "/node_modules/async/lib/async",
+  "jquery": "/node_modules/jquery/dist/jquery",
+  "proclaim": "/node_modules/proclaim/lib/proclaim",
+  "sinon": "/node_modules/sinon/pkg/sinon",
+  "task-queue": "/node_modules/task-queue.js/dist/amd",
+  "utl": "/node_modules/utl.js/dist/amd"
 }
 
 

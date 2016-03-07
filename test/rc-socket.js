@@ -300,10 +300,8 @@ describe('RcSocket', function () {
   });
 
   it('Should reset socket to its initial state.', function (done) {
-    var queue = [];
-
     var resetRcSocket = function (done) {
-      ws.reset(queue);
+      ws.reset();
       done();
     };
 
@@ -314,7 +312,6 @@ describe('RcSocket', function () {
       assert.isFalse(ws.wasForced);
       assert.isFalse(ws.isRetrying);
       assert.equal(ws.attempts, 1);
-      assert.equal(ws.queue, queue);
       done();
     };
 

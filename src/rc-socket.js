@@ -3,7 +3,14 @@
  * Originally adapted from: https://github.com/joewalnes/reconnecting-websocket
  */
 
-define(function () {
+define(function (require) {
+
+
+/* -----------------------------------------------------------------------------
+ * dependencies
+ * ---------------------------------------------------------------------------*/
+
+var TaskQueue = require('task-queue/task-queue');
 
 
 /* -----------------------------------------------------------------------------
@@ -53,7 +60,9 @@ var RcSocket = function (url, protocols) {
   this.wasForced = false;
   this.isRetrying = false;
   this.attempts = 1;
-  this.queue = [];
+
+  // Queue used to store messages sent before socket ready.
+  this.queue = new TaskQueue(this._processQueueTask.bind(this));
 
   // Hack P1: Safegaurd against firefox behavior where close event is
   // triggered on page navigation and results in an attempted reconnect.
@@ -81,9 +90,9 @@ RcSocket.prototype.send = function (data) {
   // TODO: Seems like we should be checking if readyState is connected?
   // If the queue is actively being process we will move this send to be
   // processed within the queue cycle.
-  return this.ws && this.readyState && !this.queue.length
+  return this.ws && this.readyState && this.queue.isEmpty()
     ? this._send(data)
-    : this._addToQueue(data);
+    : this.queue.add(data);
 };
 
 /**
@@ -130,19 +139,18 @@ RcSocket.prototype.killSocket = function () {
  *
  * @param {Array} queue - Optionally reset with a given queue.
  */
-RcSocket.prototype.reset = function (queue) {
+RcSocket.prototype.reset = function () {
   // reset internal state
-  clearInterval(this.queueInterval);
+  clearTimeout(this.queueTimer);
   clearTimeout(this.connectTimer);
 
-  this.queueInterval = null;
+  this.queueTimer = null;
   this.connectTimer = null;
   this.hasUnloaded = false;
   this.hasOpened = false;
   this.wasForced = false;
   this.isRetrying = false;
   this.attempts = 1;
-  this.queue = queue || [];
 };
 
 /**
@@ -170,7 +178,7 @@ RcSocket.prototype.retry = function() {
  */
 RcSocket.prototype.reboot = function() {
   this.killSocket();
-  this.reset(this.queue);
+  this.reset();
   this._connect();
 };
 
@@ -240,7 +248,7 @@ RcSocket.prototype._onopen = function (evt) {
  * @param {Object} evt - WebSocket onclose evt.
  */
 RcSocket.prototype._onclose = function (evt) {
-  clearInterval(this.queueInterval);
+  clearTimeout(this.queueTimer);
   clearTimeout(this.connectTimer);
   this.ws = null;
 
@@ -344,39 +352,12 @@ RcSocket.prototype._send = function (data) {
  * @private
  * @memberof RcSocket
  *
- * @desc Add data to queue. Overwrite this if we wanted to add additional rules
- *   about what can be added to the queue.
- *
- * @param {Object} data - Data to add to queue.
- */
-RcSocket.prototype._addToQueue = function (data) {
-  this.queue.push(data);
-  return data;
-};
-
-/**
- * @private
- * @memberof RcSocket
- *
- * @desc Remove room from tail of queue.
- */
-RcSocket.prototype._shiftFromQueue = function () {
-  return this.queue.shift();
-};
-
-/**
- * @private
- * @memberof RcSocket
- *
- * @desc Loop over all queued messages and send.
+ * @desc Begin processing queue.
  */
 RcSocket.prototype._sendQueued = function () {
-  if (!this.queue.length) {
-    return;
+  if (!this.queue.isEmpty()) {
+    this.queue.process();
   }
-
-  this.queueInterval = setInterval(this._sendFromHead.bind(this), this.delay);
-  this._sendFromHead();
 };
 
 /**
@@ -385,11 +366,11 @@ RcSocket.prototype._sendQueued = function () {
  *
  * @desc Send message from tail of queue.
  */
-RcSocket.prototype._sendFromHead = function () {
-  this._send(this._shiftFromQueue());
+RcSocket.prototype._processQueueTask = function (msg, next) {
+  this._send(msg);
 
-  if (!this.queue.length) {
-    clearInterval(this.queueInterval);
+  if (!this.queue.isEmpty()) {
+    this.queueTimer = setTimeout(next, this.delay);
   }
 };
 
