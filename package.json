@@ -16,7 +16,7 @@
   },
   "main": "dist/common/rc-socket.js",
   "dependencies": {
-    "task-queue.js": "~0.0.1",
+    "task-queue.js": "~0.1.0",
     "utl.js": "~0.1.1"
   },
   "devDependencies": {

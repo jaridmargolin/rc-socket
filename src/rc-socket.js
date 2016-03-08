@@ -62,7 +62,10 @@ var RcSocket = function (url, protocols) {
   this.attempts = 1;
 
   // Queue used to store messages sent before socket ready.
+  // By default, the queue updates on task complete, howeverm as far as we
+  // are concerned with messages, once they are sent, they are gone.
   this.queue = new TaskQueue(this._processQueueTask.bind(this));
+  this.queue.shiftOnProcess = true;
 
   // Hack P1: Safegaurd against firefox behavior where close event is
   // triggered on page navigation and results in an attempted reconnect.
