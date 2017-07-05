@@ -1,0 +1,42 @@
+{
+  "name": "rc-socket.js",
+  "description": "Reconnecting WebSocket.",
+  "author": "Jarid Margolin <jarid@firstopinionapp.com>",
+  "version": "3.0.0",
+  "license": "MIT",
+  "homepage": "https://github.com/firstopinion/rc-socket.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/firstopinion/rc-socket.js"
+  },
+  "bugs": {
+    "url": "https://github.com/firstopinion/rc-socket.js/issues"
+  },
+  "main": "build/rc-socket.js",
+  "module": "build/es/index.js",
+  "esnext": "src/index.js",
+  "scripts": {
+    "build": "neutrino build",
+    "start": "neutrino test --watch",
+    "test": "neutrino test",
+    "view-cov": "neutrino view-cov",
+    "publish-cov": "neutrino publish-cov",
+    "build-docs": "neutrino build-docs",
+    "view-docs": "neutrino view-docs"
+  },
+  "dependencies": {
+    "task-queue.js": "~1.0.0"
+  },
+  "devDependencies": {
+    "axios": "^0.16.2",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "chai": "^4.0.2",
+    "coveralls": "^2.13.0",
+    "debug-prop": "0.0.1",
+    "exit-hook": "^1.1.1",
+    "lodash": "^4.17.4",
+    "neutrino": "^6.1.1",
+    "neutrino-preset-library": "0.3.0",
+    "wss-manager": "0.0.3"
+  }
+}

@@ -1,0 +1,19 @@
+sudo: required
+dist: trusty
+
+language: node_js
+node_js:
+- 8.0.0
+
+before_install:
+  - export CHROME_BIN=chromium-browser
+  - export DISPLAY=:99.0
+  - sh -e /etc/init.d/xvfb start
+
+after_success:
+  - npm run publish-cov
+
+env:
+  global:
+  - secure: a8A7+rxGW9qfGPzfJHwoHZzvMiGxxmYfCyvpUMoNXqpTdIsT/vGV3nN2I/nHAKqh1iKMWyl1SNhuJqkljtE/1tmlX8927ZxQU09g4y17hulIO2NZvHkFfWXCfIj4uBZS2vKPuvAnGIaa5FIbY6D2U9tXuawSq5u8pKbOw8Bftz0=
+  - secure: Cv13GXmrbraNvQKl41eKIfgXlGLxZjP4mN7GxAR+nOWwnYmY0grZoI+JZwA31e5r6Tc8z28Bkb374epN9i3Y89G4uMVpWNXB/KVDshF0YlF4ReqgG6B/7+wYBJj7kRpISXTjArSNRF1DsbM1Ny+HWW7HGoArw02TAiVDmcPEMWY=
