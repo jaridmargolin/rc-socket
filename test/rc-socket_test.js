@@ -1,3 +1,4 @@
+/* globals WebSocket:true */
 /* eslint-env mocha */
 'use strict'
 
@@ -27,7 +28,7 @@ const pollFor = condition => new Promise((resolve) => {
 /* -----------------------------------------------------------------------------
  * test
  * -------------------------------------------------------------------------- */
-
+RcSocket.debug = true
 let ws
 
 const WS_URL = 'ws://localhost:9996/'
@@ -40,6 +41,7 @@ const stopServer = __ => api.post('/stop')
 const createClient = __ => Promise.resolve(ws = ws || new RcSocket(WS_URL))
 const destroyClient = __ => Promise.resolve(ws && !ws.close() && (ws = null))
 const closeClient = __ => Promise.resolve(ws.close())
+const openClient = __ => Promise.resolve(ws.open())
 const rebootClient = __ => Promise.resolve(ws.reboot())
 const killClient = __ => Promise.resolve(ws.kill())
 const resetClient = __ => Promise.resolve(ws._reset())
@@ -161,5 +163,22 @@ describe('rc-socket.js', function () {
       .then(waitUntilOpen)
       .then(resetClient)
       .then(assertReset)
+  })
+
+  it('Should support closing and re-opening the socket', function () {
+    const addReceiveSpy = __ => (ws.onmessage = spy())
+    const sendMessage = __ => ws.send({ msg: 'test' })
+    const waitUntilClosed = __ => pollFor(__ => ws.readyState === WebSocket['CLOSED'])
+    const waitUntilReceived = __ => pollFor(__ => ws.onmessage.called)
+
+    return startServer()
+      .then(createClient)
+      .then(addReceiveSpy)
+      .then(waitUntilOpen)
+      .then(closeClient)
+      .then(waitUntilClosed)
+      .then(openClient)
+      .then(sendMessage)
+      .then(waitUntilReceived)
   })
 })
