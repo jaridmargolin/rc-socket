@@ -107,7 +107,7 @@ export class RcSocket {
     this.ws.onerror = null
 
     this.close()
-    delete this.ws
+    this.reset()
   }
 
   /**
@@ -127,6 +127,8 @@ export class RcSocket {
     this.wasForced = false
     this.isRetrying = false
     this.attempts = 1
+
+    delete this.ws
   }
 
   /**
@@ -152,7 +154,6 @@ export class RcSocket {
    */
   reboot () {
     this.killSocket()
-    this.reset()
     this._connect()
   }
 
@@ -268,9 +269,7 @@ export class RcSocket {
    *   happens in this method the net effect will always be the same.
    */
   _close () {
-    if (this.ws) {
-      this.ws.close()
-    }
+    this.ws && this.ws.close()
   }
 
   /**
