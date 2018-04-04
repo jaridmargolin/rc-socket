@@ -87,10 +87,9 @@ export class RcSocket {
    * @param {Object} data - data to send via web socket.
    */
   send (data) {
-    // TODO: Seems like we should be checking if readyState is connected?
     // If the queue is actively being process we will move this send to be
     // processed within the queue cycle.
-    return this.ws && this.readyState && this.queue.isEmpty()
+    return this.readyState === WebSocket['OPEN'] && this.queue.isEmpty()
       ? this._send(data)
       : this.queue.add(data)
   }
