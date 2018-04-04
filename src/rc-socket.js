@@ -131,7 +131,6 @@ export class RcSocket {
 
     this.hasOpened = false
     this.wasForced = false
-    this.isRetrying = false
     this.attempts = 1
 
     if (this.ws) {
@@ -143,19 +142,6 @@ export class RcSocket {
       delete this.ws
       delete this.readyState
     }
-  }
-
-  /**
-   * @desc Retry is intended to be called when the socket has yet to connect.
-   *   Rather than letting it set indefinetely, we close the socket after a
-   *   specified timeout and attempt to reconnect.
-   *
-   * @example
-   * socket.retry()
-   */
-  retry () {
-    this.isRetrying = true
-    this._close()
   }
 
   /**
@@ -193,9 +179,11 @@ export class RcSocket {
     // but initially being introduced for debugging purposes.
     this.ws.id = Date.now()
 
+    // Rather than letting the websocket set indefinetely, we close the socket
+    // after a specified timeout. The close will automatically handle retrying.
     this.connectTimer = setTimeout(__ => {
       this._trigger('ontimeout')
-      this.retry()
+      this._close()
     }, this.connectionTimeout)
 
     this._stateChanged('CONNECTING', 'onconnecting')
@@ -234,22 +222,17 @@ export class RcSocket {
     clearTimeout(this.connectTimer)
     delete this.ws
 
-    // Because RcSocket holds state we can pass additional information to
-    // upstream handlers regarding why the socket was closed.
-    evt.forced = this.wasForced
-    evt.isRetrying = this.isRetrying
-
     // Immediately change state and exit on force close.
     if (this.wasForced) {
-      this._stateChanged('CLOSED', 'onclose', evt)
+      this._stateChanged('CLOSED', 'onclose', Object.assign(evt, {
+        forced: true
+      }))
     } else {
-      // Was open at some point so we need to trigger close evts
-      // TODO: Wondering it state change should ALWAYS BE CALLED?
-      if (this.hasOpened) {
+      // Don't trigger onclose evts for retries
+      if (this.readyState !== WebSocket['CONNECTING']) {
         this._trigger('onclose', evt)
       }
 
-      this.isRetrying = false
       this.hasOpened = false
       this._reconnect()
     }

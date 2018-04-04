@@ -163,7 +163,6 @@ describe('rc-socket.js', function () {
       assert.notOk(ws.connectTimer)
       assert.isFalse(ws.hasOpened)
       assert.isFalse(ws.wasForced)
-      assert.isFalse(ws.isRetrying)
       assert.equal(ws.attempts, 1)
     }
 
