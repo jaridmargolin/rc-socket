@@ -342,7 +342,7 @@ export class RcSocket {
     this._send(msg)
 
     if (!this.queue.isEmpty()) {
-      this.queueTimer = setTimeout(next, this.delay)
+      this.queueTimer = setTimeout(next, this.queueSendDelay)
     }
   }
 

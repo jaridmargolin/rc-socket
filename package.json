@@ -37,6 +37,7 @@
     "lodash": "^4.17.4",
     "neutrino": "^6.1.1",
     "neutrino-preset-library": "0.3.0",
+    "sinon": "^4.5.0",
     "wss-manager": "0.0.3"
   }
 }

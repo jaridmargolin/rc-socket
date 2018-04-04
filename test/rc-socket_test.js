@@ -8,6 +8,7 @@
 // 3rd party
 import { times } from 'lodash'
 import { assert } from 'chai'
+import { spy } from 'sinon'
 import axios from 'axios'
 
 // lib
@@ -94,17 +95,27 @@ describe('rc-socket.js', function () {
   })
 
   it('Should queue & send messages upon succesfull connection', function () {
-    let count = 0
+    const addSendSpy = __ => spy(ws, '_sendPayload')
+    const addReceiveSpy = __ => (ws.onmessage = spy())
     const sendMessages = count => __ => times(count, __ => ws.send({ msg: 'test' }))
-    const addMessageSpy = __ => (ws.onmessage = __ => (count++))
-    const waitUntilReceived = __ => pollFor(__ => count === 2)
+    const waitUntilSent = __ => pollFor(__ => ws._sendPayload.called)
+    const assertCalled = count => __ => assert.equal(ws._sendPayload.callCount, count)
+    const delayByQueueSendDelay = __ => delay(ws.queueSendDelay)()
+    const waitUntilReceived = __ => pollFor(__ => ws.onmessage.callCount === 2)
+    const removSendSpy = __ => ws._sendPayload.restore()
 
     return createClient()
-      .then(addMessageSpy)
+      .then(addSendSpy)
+      .then(addReceiveSpy)
       .then(sendMessages(2))
       .then(delay(500))
       .then(startServer)
+      .then(waitUntilSent)
+      .then(assertCalled(1))
+      .then(delayByQueueSendDelay)
+      .then(assertCalled(2))
       .then(waitUntilReceived)
+      .then(removSendSpy)
   })
 
   it('Should retry if Websocket close method is called', function () {
