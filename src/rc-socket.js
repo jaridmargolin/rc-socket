@@ -217,7 +217,7 @@ export class RcSocket {
   _onclose (evt) {
     clearTimeout(this.queueTimer)
     clearTimeout(this.connectTimer)
-    this.ws = null
+    delete this.ws
 
     // Because RcSocket holds state we can pass additional information to
     // upstream handlers regarding why the socket was closed.
