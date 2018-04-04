@@ -41,7 +41,7 @@ const createClient = __ => Promise.resolve(ws = ws || new RcSocket(WS_URL))
 const destroyClient = __ => Promise.resolve(ws && !ws.close() && (ws = null))
 const closeClient = __ => Promise.resolve(ws.close())
 const rebootClient = __ => Promise.resolve(ws.reboot())
-const killClient = __ => Promise.resolve(ws.killSocket())
+const killClient = __ => Promise.resolve(ws.kill())
 const resetClient = __ => Promise.resolve(ws.reset())
 
 const waitUntilOpen = __ => pollFor(__ => ws && ws.readyState === 1)

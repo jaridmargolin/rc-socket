@@ -110,9 +110,9 @@ export class RcSocket {
    * @desc Hard kill by cleaning up all handlers.
    *
    * @example
-   * socket.killSocket()
+   * socket.kill()
    */
-  killSocket () {
+  kill () {
     this.close()
     this.reset()
   }
@@ -167,7 +167,7 @@ export class RcSocket {
    * socket.reboot()
    */
   reboot () {
-    this.killSocket()
+    this.kill()
     this._connect()
   }
 
