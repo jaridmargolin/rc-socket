@@ -161,7 +161,6 @@ describe('rc-socket.js', function () {
   it('Should reset socket to its initial state', function () {
     const assertReset = (__) => {
       assert.notOk(ws.connectTimer)
-      assert.isFalse(ws.hasUnloaded)
       assert.isFalse(ws.hasOpened)
       assert.isFalse(ws.wasForced)
       assert.isFalse(ws.isRetrying)

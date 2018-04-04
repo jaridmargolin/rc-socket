@@ -39,7 +39,6 @@ export class RcSocket {
     this.url = url
     this.protocols = protocols
 
-    this.hasUnloaded = false
     this.hasOpened = false
     this.wasForced = false
     this.isRetrying = false
@@ -61,10 +60,6 @@ export class RcSocket {
     // are concerned with messages, once they are sent, they are gone.
     this.queue = new TaskQueue(this._processQueueTask)
     this.queue.shiftOnProcess = true
-
-    // Hack P1: Safegaurd against firefox behavior where close event is
-    // triggered on page navigation and results in an attempted reconnect.
-    window.onbeforeunload = __ => { this.hasUnloaded = true }
 
     // Delay connect so that we can immediately add socket handlers.
     setTimeout(this._connect, 0)
@@ -130,7 +125,6 @@ export class RcSocket {
 
     this.queueTimer = null
     this.connectTimer = null
-    this.hasUnloaded = false
     this.hasOpened = false
     this.wasForced = false
     this.isRetrying = false
@@ -235,10 +229,7 @@ export class RcSocket {
     // Immediately change state and exit on force close.
     if (this.wasForced) {
       this._stateChanged('CLOSED', 'onclose', evt)
-
-    // Hack P2: Safegaurd against firefox behavior where close event is
-    // triggered on page navigation and results in an attempted reconnect.
-    } else if (!this.hasUnloaded) {
+    } else {
       // Was open at some point so we need to trigger close evts
       // TODO: Wondering it state change should ALWAYS BE CALLED?
       if (this.hasOpened) {
