@@ -39,11 +39,6 @@ export class RcSocket {
     this.url = url
     this.protocols = protocols
 
-    this.hasOpened = false
-    this.wasForced = false
-    this.isRetrying = false
-    this.attempts = 1
-
     this.debug = this.constructor.debug
     this.logger = this.constructor.logger
     this.connectionTimeout = this.constructor.connectionTimeout
@@ -62,7 +57,24 @@ export class RcSocket {
     this.queue.shiftOnProcess = true
 
     // Delay connect so that we can immediately add socket handlers.
-    setTimeout(this._connect, 0)
+    setTimeout(() => this.open(), 0)
+  }
+
+  /**
+   * @desc Sets initial websocket state and connects. Useful for situations
+   * where you want to close the socket and reopen it at a later time.
+   *
+   * @example
+   * socket.close()
+   * socket.open()
+   */
+  open () {
+    if (this.readyState && this.readyState !== WebSocket['CLOSED']) {
+      throw Error('An existing socket is still open')
+    }
+
+    this.reset()
+    this._connect()
   }
 
   /**
@@ -129,6 +141,7 @@ export class RcSocket {
       this.ws.onerror = null
 
       delete this.ws
+      delete this.readyState
     }
   }
 
