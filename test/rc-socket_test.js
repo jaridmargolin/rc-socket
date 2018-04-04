@@ -149,6 +149,10 @@ describe('rc-socket.js', function () {
   it('Should reset socket to its initial state', function () {
     const assertReset = (__) => {
       assert.isUndefined(ws.connectTimer)
+      assert.isUndefined(ws.queueTimer)
+      assert.isUndefined(ws.ws)
+      assert.isUndefined(ws.readyState)
+      assert.isUndefined(ws.closeType)
       assert.equal(ws.attempts, 1)
     }
 
