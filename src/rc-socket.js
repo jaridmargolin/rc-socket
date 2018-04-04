@@ -129,7 +129,6 @@ export class RcSocket {
     this.queueTimer = clearTimeout(this.queueTimer)
     this.connectTimer = clearTimeout(this.connectTimer)
 
-    this.hasOpened = false
     this.wasForced = false
     this.attempts = 1
 
@@ -204,7 +203,6 @@ export class RcSocket {
       return this.close()
     }
 
-    this.hasOpened = true
     this.attempts = 1
     this._stateChanged('OPEN', 'onopen', evt)
     this._sendQueued()
@@ -233,7 +231,6 @@ export class RcSocket {
         this._trigger('onclose', evt)
       }
 
-      this.hasOpened = false
       this._reconnect()
     }
   }
