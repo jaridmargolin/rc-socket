@@ -126,8 +126,7 @@ export class RcSocket {
    * @param {Array} queue - Optionally reset with a given queue.
    */
   reset () {
-    this.queueTimer = clearTimeout(this.queueTimer)
-    this.connectTimer = clearTimeout(this.connectTimer)
+    this._stop()
 
     this.wasForced = false
     this.attempts = 1
@@ -190,6 +189,16 @@ export class RcSocket {
 
   /**
    * @private
+   * @desc Stop all async code from executing. Used internally anytime a socket
+   * is either manually closed, or interpretted as closed
+   */
+  _stop () {
+    this.queueTimer = clearTimeout(this.queueTimer)
+    this.connectTimer = clearTimeout(this.connectTimer)
+  }
+
+  /**
+   * @private
    * @desc Timeout cleanup, state management, and queue handling.
    *
    * @param {Object} evt - WebSocket onopen evt.
@@ -216,8 +225,7 @@ export class RcSocket {
    * @param {Object} evt - WebSocket onclose evt.
    */
   _onclose (evt) {
-    clearTimeout(this.queueTimer)
-    clearTimeout(this.connectTimer)
+    this._stop()
     delete this.ws
 
     // Immediately change state and exit on force close.
