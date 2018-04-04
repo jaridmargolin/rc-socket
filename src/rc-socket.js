@@ -120,11 +120,9 @@ export class RcSocket {
    */
   reset () {
     // reset internal state
-    clearTimeout(this.queueTimer)
-    clearTimeout(this.connectTimer)
+    this.queueTimer = clearTimeout(this.queueTimer)
+    this.connectTimer = clearTimeout(this.connectTimer)
 
-    this.queueTimer = null
-    this.connectTimer = null
     this.hasOpened = false
     this.wasForced = false
     this.isRetrying = false
