@@ -69,12 +69,12 @@ export class RcSocket {
    * socket.open()
    */
   open () {
-    if (this.readyState && this.readyState !== WebSocket['CLOSED']) {
-      throw Error('An existing socket is still open')
+    if (!this.readyState || this.readyState > WebSocket['CLOSING']) {
+      this._reset()
+      this._connect()
+    } else if (this.readyState === WebSocket['CLOSING']) {
+      this.shouldReopen = true
     }
-
-    this._reset()
-    this._connect()
   }
 
   /**
@@ -190,6 +190,7 @@ export class RcSocket {
     delete this.ws
     delete this.readyState
     delete this.closeType
+    delete this.shouldReopen
 
     this.attempts = 1
   }
@@ -230,6 +231,10 @@ export class RcSocket {
       this._stateChanged('CLOSED', 'onclose', Object.assign(evt, {
         forced: true
       }))
+
+      if (this.shouldReopen) {
+        this.open()
+      }
     } else {
       if (this.closeType !== 'RETRY') {
         this._trigger('onclose', evt)
@@ -269,8 +274,10 @@ export class RcSocket {
    * @param {String} closeType - The type of close ['FORCE', 'RETRY', 'KILL']
    */
   _close (closeType) {
+    this.closeType = closeType
+    this.shouldReopen = false
+
     if (this.ws && this.readyState < WebSocket['CLOSING']) {
-      this.closeType = closeType
       this.ws.close()
       this._stateChanged('CLOSING', 'onclosing')
     }

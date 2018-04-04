@@ -168,7 +168,6 @@ describe('rc-socket.js', function () {
   it('Should support closing and re-opening the socket', function () {
     const addReceiveSpy = __ => (ws.onmessage = spy())
     const sendMessage = __ => ws.send({ msg: 'test' })
-    const waitUntilClosed = __ => pollFor(__ => ws.readyState === WebSocket['CLOSED'])
     const waitUntilReceived = __ => pollFor(__ => ws.onmessage.called)
 
     return startServer()
@@ -176,7 +175,6 @@ describe('rc-socket.js', function () {
       .then(addReceiveSpy)
       .then(waitUntilOpen)
       .then(closeClient)
-      .then(waitUntilClosed)
       .then(openClient)
       .then(sendMessage)
       .then(waitUntilReceived)
