@@ -102,8 +102,7 @@ export class RcSocket {
    * socket.close()
    */
   close () {
-    this.wasForced = true
-    this._close()
+    this._close('FORCE')
   }
 
   /**
@@ -113,7 +112,7 @@ export class RcSocket {
    * socket.kill()
    */
   kill () {
-    this._close()
+    this._close('KILL')
     this._reset()
   }
 
@@ -156,7 +155,7 @@ export class RcSocket {
     // after a specified timeout. The close will automatically handle retrying.
     this.connectTimer = setTimeout(__ => {
       this._trigger('ontimeout')
-      this._close()
+      this._close('RETRY')
     }, this.connectionTimeout)
 
     this._stateChanged('CONNECTING', 'onconnecting')
@@ -182,18 +181,18 @@ export class RcSocket {
   _reset () {
     this._stop()
 
-    this.wasForced = false
-    this.attempts = 1
-
     if (this.ws) {
       this.ws.onopen = null
       this.ws.onclose = null
       this.ws.onmessage = null
       this.ws.onerror = null
-
-      delete this.ws
-      delete this.readyState
     }
+
+    delete this.ws
+    delete this.readyState
+    delete this.closeType
+
+    this.attempts = 1
   }
 
   /**
@@ -207,7 +206,7 @@ export class RcSocket {
 
     // Fix error where close is explicitly called but onopen event is still
     // triggered.
-    if (this.wasForced) {
+    if (this.closeType === 'FORCE') {
       return this.close()
     }
 
@@ -228,13 +227,12 @@ export class RcSocket {
     delete this.ws
 
     // Immediately change state and exit on force close.
-    if (this.wasForced) {
+    if (this.closeType === 'FORCE') {
       this._stateChanged('CLOSED', 'onclose', Object.assign(evt, {
         forced: true
       }))
     } else {
-      // Don't trigger onclose evts for retries
-      if (this.readyState !== WebSocket['CONNECTING']) {
+      if (this.closeType !== 'RETRY') {
         this._trigger('onclose', evt)
       }
 
@@ -268,8 +266,11 @@ export class RcSocket {
    *   fail silently. This seemed logical as closing the socket would have the
    *   same effect as if the socket never existed. In other words no matter what
    *   happens in this method the net effect will always be the same.
+   *
+   * @param {String} closeType - The type of close ['FORCE', 'RETRY', 'KILL']
    */
-  _close () {
+  _close (closeType) {
+    this.closeType = closeType
     this.ws && this.ws.close()
   }
 

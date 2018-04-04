@@ -136,18 +136,6 @@ describe('rc-socket.js', function () {
       .then(waitUntilClosed)
   })
 
-  it('Should close if wasForced true when onopen handler called', function () {
-    const setWasForced = __ => (ws.wasForced = true)
-    const callOnopen = __ => ws.ws.onopen()
-
-    return startServer()
-      .then(createClient)
-      .then(waitUntilOpen)
-      .then(setWasForced)
-      .then(callOnopen)
-      .then(waitUntilClosed)
-  })
-
   it('Should silently kill the socket', function () {
     const assertKilled = __ => assert.notOk(ws.ws)
 
@@ -160,8 +148,7 @@ describe('rc-socket.js', function () {
 
   it('Should reset socket to its initial state', function () {
     const assertReset = (__) => {
-      assert.notOk(ws.connectTimer)
-      assert.isFalse(ws.wasForced)
+      assert.isUndefined(ws.connectTimer)
       assert.equal(ws.attempts, 1)
     }
 
