@@ -101,11 +101,6 @@ export class RcSocket {
    * socket.killSocket()
    */
   killSocket () {
-    this.ws.onopen = null
-    this.ws.onclose = null
-    this.ws.onmessage = null
-    this.ws.onerror = null
-
     this.close()
     this.reset()
   }
@@ -119,7 +114,6 @@ export class RcSocket {
    * @param {Array} queue - Optionally reset with a given queue.
    */
   reset () {
-    // reset internal state
     this.queueTimer = clearTimeout(this.queueTimer)
     this.connectTimer = clearTimeout(this.connectTimer)
 
@@ -128,7 +122,14 @@ export class RcSocket {
     this.isRetrying = false
     this.attempts = 1
 
-    delete this.ws
+    if (this.ws) {
+      this.ws.onopen = null
+      this.ws.onclose = null
+      this.ws.onmessage = null
+      this.ws.onerror = null
+
+      delete this.ws
+    }
   }
 
   /**
