@@ -16,13 +16,15 @@
   "module": "build/es/index.js",
   "esnext": "src/index.js",
   "scripts": {
-    "build": "neutrino build",
+    "build": "npm run build-lib && npm run build-docs",
     "start": "neutrino test --watch",
     "test": "neutrino test",
     "view-cov": "neutrino view-cov",
     "publish-cov": "neutrino publish-cov",
+    "build-lib": "neutrino build",
     "build-docs": "neutrino build-docs",
-    "view-docs": "neutrino view-docs"
+    "view-docs": "neutrino view-docs",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "task-queue.js": "~1.0.0"
