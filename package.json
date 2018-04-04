@@ -24,7 +24,8 @@
     "build-lib": "neutrino build",
     "build-docs": "neutrino build-docs",
     "view-docs": "neutrino view-docs",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "prepush": "npm test"
   },
   "dependencies": {
     "task-queue.js": "~1.0.0"
@@ -36,6 +37,7 @@
     "coveralls": "^2.13.0",
     "debug-prop": "0.0.1",
     "exit-hook": "^1.1.1",
+    "husky": "^0.14.3",
     "lodash": "^4.17.4",
     "neutrino": "^6.1.1",
     "neutrino-preset-library": "0.3.0",
