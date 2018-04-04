@@ -270,8 +270,11 @@ export class RcSocket {
    * @param {String} closeType - The type of close ['FORCE', 'RETRY', 'KILL']
    */
   _close (closeType) {
-    this.closeType = closeType
-    this.ws && this.ws.close()
+    if (this.ws && this.readyState < WebSocket['CLOSING']) {
+      this.closeType = closeType
+      this.ws.close()
+      this._stateChanged('CLOSING', 'onclosing')
+    }
   }
 
   /**
