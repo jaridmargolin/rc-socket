@@ -28,7 +28,7 @@ const pollFor = condition => new Promise((resolve) => {
 /* -----------------------------------------------------------------------------
  * test
  * -------------------------------------------------------------------------- */
-RcSocket.debug = true
+
 let ws
 
 const WS_URL = 'ws://localhost:9996/'
