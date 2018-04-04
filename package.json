@@ -2,7 +2,7 @@
   "name": "rc-socket.js",
   "description": "Reconnecting WebSocket.",
   "author": "Jarid Margolin <jaridmargolin@gmail.com>",
-  "version": "4.0.0-beta.0",
+  "version": "4.0.0-beta.1",
   "license": "MIT",
   "homepage": "https://github.com/jaridmargolin/rc-socket.js",
   "repository": {
