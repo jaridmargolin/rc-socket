@@ -73,7 +73,7 @@ export class RcSocket {
       throw Error('An existing socket is still open')
     }
 
-    this.reset()
+    this._reset()
     this._connect()
   }
 
@@ -113,33 +113,8 @@ export class RcSocket {
    * socket.kill()
    */
   kill () {
-    this.close()
-    this.reset()
-  }
-
-  /**
-   * @desc Reset socket to initial state.
-   *
-   * @example
-   * socket.reset()
-   *
-   * @param {Array} queue - Optionally reset with a given queue.
-   */
-  reset () {
-    this._stop()
-
-    this.wasForced = false
-    this.attempts = 1
-
-    if (this.ws) {
-      this.ws.onopen = null
-      this.ws.onclose = null
-      this.ws.onmessage = null
-      this.ws.onerror = null
-
-      delete this.ws
-      delete this.readyState
-    }
+    this._close()
+    this._reset()
   }
 
   /**
@@ -195,6 +170,30 @@ export class RcSocket {
   _stop () {
     this.queueTimer = clearTimeout(this.queueTimer)
     this.connectTimer = clearTimeout(this.connectTimer)
+  }
+
+  /**
+   * @private
+   * @desc Reset socket to initial state.
+   *
+   * @example
+   * socket._reset()
+   */
+  _reset () {
+    this._stop()
+
+    this.wasForced = false
+    this.attempts = 1
+
+    if (this.ws) {
+      this.ws.onopen = null
+      this.ws.onclose = null
+      this.ws.onmessage = null
+      this.ws.onerror = null
+
+      delete this.ws
+      delete this.readyState
+    }
   }
 
   /**
