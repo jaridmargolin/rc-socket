@@ -1,16 +1,16 @@
 {
   "name": "rc-socket.js",
   "description": "Reconnecting WebSocket.",
-  "author": "Jarid Margolin <jarid@firstopinionapp.com>",
+  "author": "Jarid Margolin <jaridmargolin@gmail.com>",
   "version": "4.0.0-beta.0",
   "license": "MIT",
-  "homepage": "https://github.com/firstopinion/rc-socket.js",
+  "homepage": "https://github.com/jaridmargolin/rc-socket.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/firstopinion/rc-socket.js"
+    "url": "https://github.com/jaridmargolin/rc-socket.js"
   },
   "bugs": {
-    "url": "https://github.com/firstopinion/rc-socket.js/issues"
+    "url": "https://github.com/jaridmargolin/rc-socket.js/issues"
   },
   "main": "build/rc-socket.js",
   "module": "build/es/index.js",
