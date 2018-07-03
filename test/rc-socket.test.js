@@ -1,5 +1,3 @@
-/* globals WebSocket:true */
-/* eslint-env mocha */
 'use strict'
 
 /* -----------------------------------------------------------------------------
@@ -7,23 +5,33 @@
  * -------------------------------------------------------------------------- */
 
 // 3rd party
-import { times } from 'lodash'
-import { assert } from 'chai'
-import { spy } from 'sinon'
+import _ from 'lodash'
+import chai from 'chai'
+import sinon from 'sinon'
 import axios from 'axios'
 
 // lib
-import RcSocket from '../src'
+import RcSocket from '../src/rc-socket.js'
+
+/* -----------------------------------------------------------------------------
+ * shorthands
+ * -------------------------------------------------------------------------- */
+
+const { times } = _
+const { assert } = chai
+const { spy } = sinon
 
 /* -----------------------------------------------------------------------------
  * utils
  * -------------------------------------------------------------------------- */
 
 const delay = time => __ => new Promise(resolve => setTimeout(resolve, time))
-const pollFor = condition => new Promise((resolve) => {
-  const check = __ => setTimeout(__ => condition() ? resolve() : check(), 10)
-  check()
-})
+const pollFor = condition =>
+  new Promise(resolve => {
+    const check = __ =>
+      setTimeout(__ => (condition() ? resolve() : check()), 10)
+    check()
+  })
 
 /* -----------------------------------------------------------------------------
  * test
@@ -38,7 +46,7 @@ const api = axios.create({ baseURL: API_URL })
 const startServer = __ => api.post('/start')
 const stopServer = __ => api.post('/stop')
 
-const createClient = __ => Promise.resolve(ws = ws || new RcSocket(WS_URL))
+const createClient = __ => Promise.resolve((ws = ws || new RcSocket(WS_URL)))
 const destroyClient = __ => Promise.resolve(ws && !ws.close() && (ws = null))
 const closeClient = __ => Promise.resolve(ws.close())
 const openClient = __ => Promise.resolve(ws.open())
@@ -53,8 +61,7 @@ describe('rc-socket.js', function () {
   this.timeout(10000)
 
   afterEach(function () {
-    return destroyClient()
-      .then(stopServer)
+    return destroyClient().then(stopServer)
   })
 
   it('Should connect to socket', function () {
@@ -65,7 +72,7 @@ describe('rc-socket.js', function () {
 
   it('Should retry connection until socket is available', function () {
     let count = 0
-    const addCountSpy = __ => (ws.onconnecting = __ => (count++))
+    const addCountSpy = __ => (ws.onconnecting = __ => count++)
     const verifyCount = __ => assert.equal(count, 2)
     const verifyId = __ => assert.isNumber(ws.ws.id)
 
@@ -99,9 +106,11 @@ describe('rc-socket.js', function () {
   it('Should queue & send messages upon succesfull connection', function () {
     const addSendSpy = __ => spy(ws, '_sendPayload')
     const addReceiveSpy = __ => (ws.onmessage = spy())
-    const sendMessages = count => __ => times(count, __ => ws.send({ msg: 'test' }))
+    const sendMessages = count => __ =>
+      times(count, __ => ws.send({ msg: 'test' }))
     const waitUntilSent = __ => pollFor(__ => ws._sendPayload.called)
-    const assertCalled = count => __ => assert.equal(ws._sendPayload.callCount, count)
+    const assertCalled = count => __ =>
+      assert.equal(ws._sendPayload.callCount, count)
     const delayByQueueSendDelay = __ => delay(ws.queueSendDelay)()
     const waitUntilReceived = __ => pollFor(__ => ws.onmessage.callCount === 2)
     const removSendSpy = __ => ws._sendPayload.restore()
@@ -149,7 +158,7 @@ describe('rc-socket.js', function () {
   })
 
   it('Should reset socket to its initial state', function () {
-    const assertReset = (__) => {
+    const assertReset = __ => {
       assert.isUndefined(ws.connectTimer)
       assert.isUndefined(ws.queueTimer)
       assert.isUndefined(ws.ws)

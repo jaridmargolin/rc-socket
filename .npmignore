@@ -1,22 +1,7 @@
 .DS_Store
-.grunt
-
-lib-cov
-*.seed
-*.log
-*.csv
-*.dat
-*.out
-*.pid
-*.gz
-
-pids
-logs
-results
-
 npm-debug.log
 sauce_connect.log
 
 /.nyc_output
 /node_modules
-/.coverage
+/coverage

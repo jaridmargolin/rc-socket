@@ -1,0 +1,6 @@
+# Ignore all "built" files
+dist/**/*
+docs/**/*
+
+# .babelrc is JSON
+.babelrc
