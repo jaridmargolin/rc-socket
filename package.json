@@ -23,7 +23,7 @@
     "view-docs": "opn ./docs/index.html"
   },
   "dependencies": {
-    "task-queue.js": "^1.0.1"
+    "task-queue.js": "^1.0.2"
   },
   "devDependencies": {
     "axios": "0.18.0",
