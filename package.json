@@ -26,7 +26,7 @@
     "task-queue.js": "^1.0.1"
   },
   "devDependencies": {
-    "axios": "0.16.2",
+    "axios": "0.18.0",
     "babel-cli": "6.26.0",
     "babel-eslint": "8.2.5",
     "babel-plugin-external-helpers": "6.22.0",
