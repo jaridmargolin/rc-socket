@@ -58,7 +58,7 @@
     "nyc": "13.0.1",
     "opn-cli": "3.1.0",
     "prettier-eslint-cli": "4.7.1",
-    "rollup": "0.63.5",
+    "rollup": "0.64.1",
     "rollup-plugin-babel": "3.0.7",
     "rollup-plugin-commonjs": "9.1.4",
     "rollup-plugin-istanbul": "2.0.1",
