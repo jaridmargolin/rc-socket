@@ -67,7 +67,7 @@
     "rollup-plugin-node-globals": "1.4.0",
     "rollup-plugin-node-resolve": "3.4.0",
     "rollup-plugin-terser": "3.0.0",
-    "sinon": "6.3.5",
+    "sinon": "7.0.0",
     "wss-manager": "0.0.6"
   }
 }
