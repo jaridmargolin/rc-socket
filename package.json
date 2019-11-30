@@ -20,7 +20,7 @@
     "start": "karma start",
     "test": "karma start --single-run",
     "view-cov": "opn ./coverage/lcov-report/index.html",
-    "view-docs": "opn ./docs/index.htmlg"
+    "view-docs": "opn ./docs/index.html"
   },
   "dependencies": {
     "task-queue.js": "^1.0.2"
@@ -35,7 +35,7 @@
     "chai": "4.2.0",
     "codecov": "4.0.0-0",
     "debug-prop": "0.0.1",
-    "docdash": "1.0.2",
+    "docdash": "1.1.1",
     "eslint": "5.16.0",
     "eslint-config-standard": "12.0.0",
     "eslint-plugin-import": "2.18.2",
