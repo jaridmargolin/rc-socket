@@ -26,10 +26,10 @@
     "task-queue.js": "^1.0.2"
   },
   "devDependencies": {
-    "@babel/core": "^7.7.4",
-    "@babel/plugin-external-helpers": "^7.7.4",
-    "@babel/plugin-proposal-class-properties": "^7.7.4",
-    "@babel/preset-env": "^7.7.4",
+    "@babel/core": "7.7.4",
+    "@babel/plugin-external-helpers": "7.7.4",
+    "@babel/plugin-proposal-class-properties": "7.7.4",
+    "@babel/preset-env": "7.7.4",
     "axios": "0.18.0",
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
