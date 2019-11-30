@@ -1,4 +1,4 @@
-<h1>rc-socket.js</h1>
+<h1>rc-socket</h1>
 <div>
   <p>Reconnecting WebSocket.</p>
   <div>

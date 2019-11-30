@@ -11,7 +11,7 @@ import sinon from 'sinon'
 import axios from 'axios'
 
 // lib
-import RcSocket from '../src/rc-socket.js'
+import RcSocket from '../src/rc-socket'
 
 /* -----------------------------------------------------------------------------
  * shorthands
@@ -57,7 +57,7 @@ const resetClient = __ => Promise.resolve(ws._reset())
 const waitUntilOpen = __ => pollFor(__ => ws && ws.readyState === 1)
 const waitUntilClosed = __ => pollFor(__ => ws && ws.readyState === 3)
 
-describe('rc-socket.js', function () {
+describe('rc-socket', function () {
   this.timeout(10000)
 
   afterEach(function () {
