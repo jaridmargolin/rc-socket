@@ -13,33 +13,39 @@ import resolve from 'rollup-plugin-node-resolve'
  * -------------------------------------------------------------------------- */
 
 const sharedPlugins = [
-  resolve({ module: true }),
+  resolve({
+    extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
+    module: true
+  }),
   babel({
+    extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx'],
     exclude: 'node_modules/**'
   })
 ]
 
 export default [
   {
-    input: 'src/rc-socket.js',
+    input: 'src/rc-socket.ts',
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/rc-socket.js',
       format: 'umd',
-      name: 'RcSocket'
+      name: 'RcSocket',
+      exports: 'named'
     }
   },
   {
-    input: 'src/rc-socket.js',
+    input: 'src/rc-socket.ts',
     external: ['task-queue.js'],
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/common/rc-socket.js',
-      format: 'cjs'
+      format: 'cjs',
+      exports: 'named'
     }
   },
   {
-    input: 'src/rc-socket.js',
+    input: 'src/rc-socket.ts',
     external: ['task-queue.js'],
     plugins: [...sharedPlugins],
     output: {
@@ -48,12 +54,13 @@ export default [
     }
   },
   {
-    input: 'src/rc-socket.js',
+    input: 'src/rc-socket.ts',
     plugins: [...sharedPlugins, terser()],
     output: {
       file: 'dist/rc-socket.min.js',
       format: 'umd',
-      name: 'RcSocket'
+      name: 'RcSocket',
+      exports: 'named'
     }
   }
 ]

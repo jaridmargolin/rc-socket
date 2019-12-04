@@ -6,14 +6,17 @@
 
 module.exports = {
   root: true,
-  parser: 'babel-eslint',
+  parser: '@typescript-eslint/parser',
+  plugins: ['@typescript-eslint'],
   extends: 'standard',
   rules: {
-    'quote-props': ['error', 'consistent-as-needed']
+    'quote-props': ['error', 'consistent-as-needed'],
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-unused-vars': ['error']
   },
   overrides: [
     {
-      files: ['**/*.test.js'],
+      files: ['**/*.test.ts'],
       env: { mocha: true }
     }
   ]

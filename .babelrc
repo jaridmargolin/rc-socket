@@ -1,7 +1,12 @@
 {
-  "plugins": ["@babel/plugin-external-helpers", "@babel/plugin-proposal-class-properties"],
-  "presets": [["@babel/preset-env", {
-    "modules": false,
-    "targets": { "browsers": [">0.25% in US"] }
-  }]]
+  "plugins": ["@babel/plugin-proposal-class-properties"],
+  "presets": [
+    ["@babel/preset-env", {
+      "modules": false,
+      "corejs": 3,
+      "useBuiltIns": "usage",
+      "targets": { "browsers": [">0.25% in US"] }
+    }],
+    "@babel/preset-typescript"
+  ]
 }

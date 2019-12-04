@@ -30,13 +30,12 @@ module.exports = config =>
     browsers: ['ChromeHeadless'],
     reporters: ['mocha', 'coverage-istanbul'],
     preprocessors: {
-      'src/**/*.js': ['rollup'],
-      'test/**/*.js': ['rollup']
+      'src/**/*.ts': ['rollup']
     },
 
     files: [
       {
-        pattern: 'test/**/*.test.js',
+        pattern: 'src/**/*.test.ts',
         watched: false,
         included: true,
         served: true
@@ -52,20 +51,20 @@ module.exports = config =>
       plugins: [
         json(),
         resolve({
+          extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
           preferBuiltins: true,
-          browser: true,
-          module: true,
-          jsnext: true,
-          main: true
+          mainFields: ['browser', 'module', 'jsnext', 'main']
         }),
         commonjs({
-          include: 'node_modules/**'
+          include: 'node_modules/**',
+          namedExports: { chai: ['assert'] }
         }),
         babel({
+          extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx'],
           exclude: 'node_modules/**'
         }),
         istanbul({
-          exclude: ['test/**', 'node_modules/**']
+          exclude: ['src/*.test.ts', 'node_modules/**']
         }),
         globals(),
         builtins()

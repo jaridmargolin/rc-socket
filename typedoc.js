@@ -1,9 +1,15 @@
 'use strict'
 
 /* -----------------------------------------------------------------------------
- * lint-staged config
+ * typedoc config
  * -------------------------------------------------------------------------- */
 
 module.exports = {
-  '*.ts': ['npm run format', 'git add']
+  exclude: ['./src/*.test.ts'],
+  mode: 'file',
+  out: './docs',
+  readme: 'none',
+  excludePrivate: true,
+  excludeNotExported: true,
+  outline: false
 }
