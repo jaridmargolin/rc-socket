@@ -21,7 +21,7 @@
     "prepublishOnly": "yarn build",
     "publish-cov": "codecov",
     "start": "karma start",
-    "test": "karma start --single-run",
+    "test": "yarn check-types && karma start --single-run",
     "view-cov": "open-cli ./coverage/lcov-report/index.html",
     "view-docs": "open-cli ./docs/index.html"
   },
