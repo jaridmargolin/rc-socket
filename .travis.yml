@@ -25,3 +25,4 @@ deploy:
   local_dir: docs
   on:
     branch: master
+    node_js: '12'
