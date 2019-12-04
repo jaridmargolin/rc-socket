@@ -14,7 +14,7 @@
   </div>
   <div>
     <a href="https://npmjs.org/package/rc-socket">
-      <img src="https://img.shields.io/npm/v/rc-socket.svg" alt="NPM rc-socket package">
+      <img src="https://img.shields.io/npm/v/@inventory/rc-socket.svg" alt="NPM rc-socket package">
     </a>
     <a href="https://david-dm.org/jaridmargolin/rc-socket">
       <img src="https://david-dm.org/jaridmargolin/rc-socket.svg" alt="Dependency Status">
