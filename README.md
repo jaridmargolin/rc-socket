@@ -1,32 +1,33 @@
-<h1>rc-socket</h1>
-<div>
+<h1 align="center">rc-socket</h1>
+<div align="center">
   <p>Reconnecting WebSocket.</p>
   <div>
-    <a href="https://travis-ci.org/jaridmargolin/rc-socket.js">
-      <img src="https://travis-ci.org/jaridmargolin/rc-socket.js.svg?branch=master" alt="Build Status">
+    <a href="https://travis-ci.org/jaridmargolin/rc-socket">
+      <img src="https://travis-ci.org/jaridmargolin/rc-socket.svg?branch=master" alt="Build Status">
     </a>
-    <a href="https://codecov.io/gh/jaridmargolin/rc-socket.js">
-      <img src="https://codecov.io/gh/jaridmargolin/rc-socket.js/branch/master/graph/badge.svg" alt="Coverage Status" />
+    <a href="https://codecov.io/gh/jaridmargolin/rc-socket">
+      <img src="https://codecov.io/gh/jaridmargolin/rc-socket/branch/master/graph/badge.svg" alt="Coverage Status" />
     </a>
     <a href="http://standardjs.com/">
       <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" alt="Standard - JavaScript Style Guide">
     </a>
   </div>
   <div>
-    <a href="https://npmjs.org/package/rc-socket.js">
-      <img src="https://img.shields.io/npm/v/rc-socket.js.svg" alt="NPM rc-socket.js package">
+    <a href="https://npmjs.org/package/rc-socket">
+      <img src="https://img.shields.io/npm/v/rc-socket.svg" alt="NPM rc-socket package">
     </a>
-    <a href="https://david-dm.org/jaridmargolin/rc-socket.js">
-      <img src="https://david-dm.org/jaridmargolin/rc-socket.js.svg" alt="Dependency Status">
+    <a href="https://david-dm.org/jaridmargolin/rc-socket">
+      <img src="https://david-dm.org/jaridmargolin/rc-socket.svg" alt="Dependency Status">
     </a>
-    <a href="https://david-dm.org/jaridmargolin/rc-socket.js#info=devDependencies">
-      <img src="https://david-dm.org/jaridmargolin/rc-socket.js/dev-status.svg" alt="devDependency Status">
+    <a href="https://david-dm.org/jaridmargolin/rc-socket#info=devDependencies">
+      <img src="https://david-dm.org/jaridmargolin/rc-socket/dev-status.svg" alt="devDependency Status">
     </a>
   </div>
-  <a href="http://jaridmargolin.github.io/rc-socket.js">View Documentation</a>
 </div>
 <br>
-
+<div align="center">
+<a href="http://jaridmargolin.github.io/rc-socket">View Documentation</a>
+</div>
 
 ## License
 
