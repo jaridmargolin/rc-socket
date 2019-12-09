@@ -41,7 +41,7 @@
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
     "codecov": "4.0.0-0",
-    "core-js": "3.4.7",
+    "core-js": "3.4.8",
     "debug-prop": "0.0.1",
     "delay": "4.3.0",
     "eslint": "5.16.0",
