@@ -111,12 +111,12 @@ Message extends RcSocketMessage = RcSocketMessage
   readyState: RcSocketReadyState = RcSocketReadyState.CONNECTING
   queue: Message[] = []
 
-  // private state
-  private _ws: RcWebSocket | null = null
-  private _attempts: number = 1
-  private _shouldReopen: boolean = false
-  private _closeType: RcSocketCloseType | null = null
-  private _connectTimer: ReturnType<typeof setTimeout> | null = null
+  // protected state
+  protected _ws: RcWebSocket | null = null
+  protected _attempts: number = 1
+  protected _shouldReopen: boolean = false
+  protected _closeType: RcSocketCloseType | null = null
+  protected _connectTimer: ReturnType<typeof setTimeout> | null = null
 
   /**
    * @constructor
@@ -249,7 +249,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *   reconnection logic), and then finally proxy the events as if we were a
    *   the actual socket.
    */
-  private _connect () {
+  protected _connect () {
     this._ws = Object.assign(new WebSocket(this.url, this.protocols), {
       id: Date.now()
     })
@@ -276,7 +276,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @desc Stop all async code from executing. Used internally anytime a socket
    * is either manually closed, or interpretted as closed
    */
-  private _stop () {
+  protected _stop () {
     if (this._connectTimer) {
       clearTimeout(this._connectTimer)
       this._connectTimer = null
@@ -288,7 +288,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *
    * @param evt - WebSocket onopen evt.
    */
-  private _onopen (evt: Event) {
+  protected _onopen (evt: Event) {
     if (this._connectTimer) {
       clearTimeout(this._connectTimer)
       this._connectTimer = null
@@ -311,7 +311,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *
    * @param evt - WebSocket onclose evt.
    */
-  private _onclose (evt: CloseEvent) {
+  protected _onclose (evt: CloseEvent) {
     this._stop()
     this._ws = null
 
@@ -342,7 +342,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *
    * @param evt - WebSocket onmessage evt.
    */
-  private _onmessage (evt: MessageEvent) {
+  protected _onmessage (evt: MessageEvent) {
     this._trigger(RcSocketEventName.MESSAGE, evt)
   }
 
@@ -351,7 +351,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *
    * @param evt - WebSocket onerror evt.
    */
-  private _onerror (evt: Event) {
+  protected _onerror (evt: Event) {
     this._trigger(RcSocketEventName.ERROR, evt)
   }
 
@@ -363,7 +363,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *
    * @param closeType - The type of close ['FORCE', 'RETRY', 'KILL']
    */
-  private _close (closeType: RcSocketCloseType) {
+  protected _close (closeType: RcSocketCloseType) {
     this._closeType = closeType
     this._shouldReopen = false
 
@@ -378,7 +378,7 @@ Message extends RcSocketMessage = RcSocketMessage
    *   expotential backoff. As connect attempts increase, the time between connect
    *   attempts will grow (up to a specified connectionMaxRetryInterval).
    */
-  private _reconnect () {
+  protected _reconnect () {
     let interval = (Math.pow(2, this._attempts) - 1) * 1000
     interval =
       interval > this.settings.connectionMaxRetryInterval
@@ -393,7 +393,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @desc Wrapper around ws send to make sure all data is sent in correct
    *   format.
    */
-  private _send (data: Message) {
+  protected _send (data: Message) {
     if (this._ws) {
       this._sendPayload(JSON.stringify(data))
     }
@@ -403,7 +403,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @desc Proxy to underlying websocket `send` method. This is pulled into its
    * own method for debugging/testing purposes.
    */
-  private _sendPayload (payload: string) {
+  protected _sendPayload (payload: string) {
     if (this._ws) {
       this._ws.send(payload)
     }
@@ -416,7 +416,7 @@ Message extends RcSocketMessage = RcSocketMessage
   /**
    * @desc Begin processing queue.
    */
-  private _sendQueued () {
+  protected _sendQueued () {
     this.queue.forEach(msg => this._send(msg))
   }
 
@@ -431,7 +431,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @param name - String of the event name.
    * @param evt - Event object.
    */
-  private _stateChanged<EventName extends RcSocketEventName> (
+  protected _stateChanged<EventName extends RcSocketEventName> (
     readyState: RcSocketReadyState,
     evtName: EventName,
     evt?: GetRcSocketEventType<EventName>
@@ -446,7 +446,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @param evtName - Name of event to fire.
    * @param evt - Raw WebSocket evt we are proxying.
    */
-  private _trigger<EventName extends RcSocketEventName> (
+  protected _trigger<EventName extends RcSocketEventName> (
     evtName: EventName,
     evt?: GetRcSocketEventType<EventName>
   ) {
