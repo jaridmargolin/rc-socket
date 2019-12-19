@@ -68,7 +68,7 @@
     "opn-cli": "5.0.0",
     "p-wait-for": "3.1.0",
     "prettier-eslint-cli": "4.7.1",
-    "rollup": "1.27.11",
+    "rollup": "1.27.13",
     "rollup-plugin-babel": "4.3.3",
     "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-istanbul": "2.0.1",
