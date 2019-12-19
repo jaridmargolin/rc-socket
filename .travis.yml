@@ -4,7 +4,6 @@ language: node_js
 node_js:
   - '12'
   - '10'
-  - '8'
 env:
   global:
     - secure: a8A7+rxGW9qfGPzfJHwoHZzvMiGxxmYfCyvpUMoNXqpTdIsT/vGV3nN2I/nHAKqh1iKMWyl1SNhuJqkljtE/1tmlX8927ZxQU09g4y17hulIO2NZvHkFfWXCfIj4uBZS2vKPuvAnGIaa5FIbY6D2U9tXuawSq5u8pKbOw8Bftz0=
