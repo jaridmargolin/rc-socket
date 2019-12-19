@@ -307,7 +307,7 @@ Message extends RcSocketMessage = RcSocketMessage
 
   /**
    * @desc Responsible for interpretting the various possible close types (force,
-   *   retry, etc...) and reconnecting/proxying events accordinly.
+   *   retry, etc...) and reconnecting/proxying events accordingly.
    *
    * @param evt - WebSocket onclose evt.
    */
