@@ -738,10 +738,10 @@
   resolved "https://registry.yarnpkg.com/@inventory/debug/-/debug-0.0.2.tgz#20e1b36e9013782369125c6f2b382e9acdb1f7c9"
   integrity sha512-lOsttlOk4AnDEL7x9NpVoB+dkxpbSFfbv9UY4GE7AK7vTKyz40toz37yeowq/UDe/FCwJdgJVqzYncn7bgklrA==
 
-"@inventory/wss-manager@0.0.10":
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.10.tgz#49725f654904f5e93abc68251ca6c5c74e5c67ec"
-  integrity sha512-j/UQqfjJb0Ly5XmkDfE7HnG/AmghRArO5CaPaT/sQX6XNTcPgo7kR0TcXFcYQdw6ac/2phcG7l9PLKYpGVRlbw==
+"@inventory/wss-manager@0.0.11":
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.11.tgz#2d317eb4b74823215e5e811c3c1f202123676bfc"
+  integrity sha512-W6zkJjAyQHPCT/zsktOIZ0S4Tj8LMVR8MiT1ixu1KA4JciOgZ3beI+hGULqFPd/p3C6l78+nCrERduutCWtkbg==
   dependencies:
     "@inventory/async" "0.0.5"
     "@inventory/debug-prop" "0.0.3"
