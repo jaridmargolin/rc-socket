@@ -1,6 +1,6 @@
 {
   "name": "@inventory/rc-socket",
-  "version": "4.0.0-beta.4",
+  "version": "5.0.0-beta.1",
   "author": "Jarid Margolin <jaridmargolin@gmail.com>",
   "description": "Reconnecting WebSocket.",
   "homepage": "https://github.com/jaridmargolin/rc-socket",
