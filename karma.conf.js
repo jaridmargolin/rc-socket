@@ -21,8 +21,10 @@ const exitHook = require('exit-hook')
  * karma config
  * -------------------------------------------------------------------------- */
 
-let apiProcess = fork(require.resolve('wss-manager/bin/wss-manager'))
-exitHook(__ => apiProcess.kill('SIGKILL'))
+let apiProcess = fork(
+  require.resolve('@inventory/wss-manager/dist/bin/wss-manager')
+)
+exitHook(() => apiProcess.kill('SIGKILL'))
 
 module.exports = config =>
   config.set({

@@ -28,8 +28,8 @@ const WS_URL = 'ws://localhost:9996/'
 const API_URL = 'http://localhost:9997/'
 
 const api = axios.create({ baseURL: API_URL })
-const startServer = () => api.post('/start')
-const stopServer = () => api.post('/stop')
+const unblockServer = () => api.post('/unblock')
+const blockServer = () => api.post('/block')
 
 /* -----------------------------------------------------------------------------
  * tests
@@ -37,14 +37,6 @@ const stopServer = () => api.post('/stop')
 
 describe('rc-socket', function() {
   this.timeout(10000)
-
-  beforeEach(async () => {
-    await startServer()
-  })
-
-  afterEach(async () => {
-    await stopServer()
-  })
 
   it('Should connect to socket', async () => {
     const ws = new RcSocket(WS_URL)
@@ -54,13 +46,13 @@ describe('rc-socket', function() {
   })
 
   it('Should retry connection until socket is available', async () => {
-    await stopServer()
+    await blockServer()
 
     const ws = new RcSocket(WS_URL)
     const connectingSpy = (ws.onconnecting = spy())
 
     await delay(500)
-    await startServer()
+    await unblockServer()
     await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
 
     assert.equal(connectingSpy.callCount, 2)
@@ -85,7 +77,7 @@ describe('rc-socket', function() {
   })
 
   it('Should queue & send messages upon succesfull connection', async () => {
-    await stopServer()
+    await blockServer()
 
     const ws = new RcSocket(WS_URL)
     const sendSpy = spy(ws, <any>'_sendPayload')
@@ -96,7 +88,7 @@ describe('rc-socket', function() {
     await delay(500)
     assert.equal(sendSpy.callCount, 0)
 
-    await startServer()
+    await unblockServer()
     await waitFor(() => sendSpy.callCount === 2)
     await waitFor(() => sendSpy.callCount === 2)
 
