@@ -6,6 +6,7 @@
 
 import { terser } from 'rollup-plugin-terser'
 import babel from 'rollup-plugin-babel'
+import commonjs from 'rollup-plugin-commonjs'
 import resolve from 'rollup-plugin-node-resolve'
 
 /* -----------------------------------------------------------------------------
@@ -17,6 +18,7 @@ const sharedPlugins = [
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
     module: true
   }),
+  commonjs(),
   babel({
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx'],
     exclude: 'node_modules/**'
