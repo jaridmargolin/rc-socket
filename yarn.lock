@@ -721,10 +721,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@inventory/async@0.0.5":
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/@inventory/async/-/async-0.0.5.tgz#ed5c7fa640015423bba7cbdd667b200cf2b257d5"
-  integrity sha512-tVvb6jDdeguDNU+KpodL/DKSE+FQIEI9jC4xYoSujtfHKIQg4tGxx/YSnpbkZVrDZjCVFyQrudk+We3VWBUlBg==
+"@inventory/async@0.0.6":
+  version "0.0.6"
+  resolved "https://registry.yarnpkg.com/@inventory/async/-/async-0.0.6.tgz#630c82e8d9760eb5434c5b4aa38ea05612186ac7"
+  integrity sha512-Z+xqaf7UfHBJRNbe1yz300eW3GtsjvQUskwP+korjxvn75Ii7gcGuqhYZud67J7R12/BcejKwizIBq7ehQ1axw==
 
 "@inventory/debug-prop@0.0.3":
   version "0.0.3"
@@ -738,12 +738,12 @@
   resolved "https://registry.yarnpkg.com/@inventory/debug/-/debug-0.0.2.tgz#20e1b36e9013782369125c6f2b382e9acdb1f7c9"
   integrity sha512-lOsttlOk4AnDEL7x9NpVoB+dkxpbSFfbv9UY4GE7AK7vTKyz40toz37yeowq/UDe/FCwJdgJVqzYncn7bgklrA==
 
-"@inventory/wss-manager@0.0.11":
-  version "0.0.11"
-  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.11.tgz#2d317eb4b74823215e5e811c3c1f202123676bfc"
-  integrity sha512-W6zkJjAyQHPCT/zsktOIZ0S4Tj8LMVR8MiT1ixu1KA4JciOgZ3beI+hGULqFPd/p3C6l78+nCrERduutCWtkbg==
+"@inventory/wss-manager@0.0.12":
+  version "0.0.12"
+  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.12.tgz#f5e6f0d8983d0ba9cd4723e06b3d32ef831cf2e1"
+  integrity sha512-fMoAk11OIMl7+gzxkrTaXUru1Tv/rvhm72vJjc8jWagCwIwscIOGSWk4xJ5EM3N/ypJxg3huNhH4T3sKTTn6vQ==
   dependencies:
-    "@inventory/async" "0.0.5"
+    "@inventory/async" "0.0.6"
     "@inventory/debug-prop" "0.0.3"
     hapi "^18.1.0"
     lodash "^4.17.15"
