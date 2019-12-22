@@ -14,6 +14,13 @@ import babel from 'rollup-plugin-babel'
  * rollup config
  * -------------------------------------------------------------------------- */
 
+const externals = [
+  'core-js/modules/es.array.for-each',
+  'core-js/modules/es.date.to-string',
+  'core-js/modules/es.object.assign',
+  'core-js/modules/web.dom-collections.for-each'
+]
+
 const sharedPlugins = [
   resolve({
     extensions: ['.ts', '.tsx', '.mjs', '.js', '.jsx', '.json'],
@@ -39,7 +46,7 @@ export default [
   },
   {
     input: 'src/rc-socket.ts',
-    external: ['task-queue.js'],
+    external: externals,
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/common/rc-socket.js',
@@ -49,7 +56,7 @@ export default [
   },
   {
     input: 'src/rc-socket.ts',
-    external: ['task-queue.js'],
+    external: externals,
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/es/rc-socket.js',
