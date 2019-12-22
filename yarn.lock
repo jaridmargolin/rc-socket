@@ -721,32 +721,38 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@inventory/async@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@inventory/async/-/async-0.0.6.tgz#630c82e8d9760eb5434c5b4aa38ea05612186ac7"
-  integrity sha512-Z+xqaf7UfHBJRNbe1yz300eW3GtsjvQUskwP+korjxvn75Ii7gcGuqhYZud67J7R12/BcejKwizIBq7ehQ1axw==
+"@inventory/async@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@inventory/async/-/async-0.0.7.tgz#a03436fe723cc94ba6375c41523c5c9aea8c655e"
+  integrity sha512-Zo7BooBOwwp26HAmwAKMnTA00EKbm8wTBfT4dUU3WE9c+6qa5B7RCbxJqXr9V+xPQR4Pe7hWJPfSp2knXk/7mw==
+  dependencies:
+    core-js "^3.6.0"
 
-"@inventory/debug-prop@0.0.3":
+"@inventory/debug-prop@0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@inventory/debug-prop/-/debug-prop-0.0.4.tgz#2a862c6ebd9554a31fc85cc5fa5ca93727bc4569"
+  integrity sha512-68Q26Tmna1nnPdK46utkMkq9e1rxiXXTAaJu/9BJF4VLOosff5nzATZHVzMxiN9sjXnHeVx4KZVVWrT5fAKzBQ==
+  dependencies:
+    "@inventory/debug" "^0.0.3"
+    core-js "^3.6.0"
+
+"@inventory/debug@^0.0.3":
   version "0.0.3"
-  resolved "https://registry.yarnpkg.com/@inventory/debug-prop/-/debug-prop-0.0.3.tgz#9da83bdfdf3270d71b1352fd7c99f5b9d3a383e1"
-  integrity sha512-uICt4pHE6Aa0UEJYhJ3v49paCkHAxZuLhTRBxZV4fEdGsxEGFsngug5qJ1YLTFU5UyuzVxjFetklaMueLgG/Uw==
+  resolved "https://registry.yarnpkg.com/@inventory/debug/-/debug-0.0.3.tgz#d31b5559acce813b0d5492cafadc1ff203bd857a"
+  integrity sha512-vE3Q+Uv4JTyOf9fGswlj/GaP56eMwTlQ9ckGkHnfO7qRrvScHE63IJam+i0rxynNxyQ6dzukG0SKQU4Nper1qA==
   dependencies:
-    "@inventory/debug" "^0.0.2"
+    core-js "^3.6.0"
 
-"@inventory/debug@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@inventory/debug/-/debug-0.0.2.tgz#20e1b36e9013782369125c6f2b382e9acdb1f7c9"
-  integrity sha512-lOsttlOk4AnDEL7x9NpVoB+dkxpbSFfbv9UY4GE7AK7vTKyz40toz37yeowq/UDe/FCwJdgJVqzYncn7bgklrA==
-
-"@inventory/wss-manager@0.0.12":
-  version "0.0.12"
-  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.12.tgz#f5e6f0d8983d0ba9cd4723e06b3d32ef831cf2e1"
-  integrity sha512-fMoAk11OIMl7+gzxkrTaXUru1Tv/rvhm72vJjc8jWagCwIwscIOGSWk4xJ5EM3N/ypJxg3huNhH4T3sKTTn6vQ==
+"@inventory/wss-manager@0.0.13":
+  version "0.0.13"
+  resolved "https://registry.yarnpkg.com/@inventory/wss-manager/-/wss-manager-0.0.13.tgz#782b706a00ede8f652c2baefeda62c7238b95829"
+  integrity sha512-iS577MB8rdW6T8NaEuxl3mKadNpNhynhaZhCsV28g4kA9ueTLfnmgRPVIUGmUF/AlNljHB/eCOApAglWSAbAmw==
   dependencies:
-    "@inventory/async" "0.0.6"
-    "@inventory/debug-prop" "0.0.3"
+    "@inventory/async" "0.0.7"
+    "@inventory/debug-prop" "0.0.4"
     hapi "^18.1.0"
     lodash "^4.17.15"
+    ws "^7.2.1"
 
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
@@ -1945,15 +1951,15 @@ core-js-compat@^3.6.0:
     browserslist "^4.8.2"
     semver "7.0.0"
 
-core-js@3.6.0:
-  version "3.6.0"
-  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.6.0.tgz#2b854e451de1967d1e29896025cdc13a2518d9ea"
-  integrity sha512-AHPTNKzyB+YwgDWoSOCaid9PUSEF6781vsfiK8qUz62zRR448/XgK2NtCbpiUGizbep8Lrpt0Du19PpGGZvw3Q==
-
 core-js@^2.4.0:
   version "2.6.10"
   resolved "https://registry.yarnpkg.com/core-js/-/core-js-2.6.10.tgz#8a5b8391f8cc7013da703411ce5b585706300d7f"
   integrity sha512-I39t74+4t+zau64EN1fE5v2W31Adtc/REhzWN+gWRRXg6WH5qAsZm62DHpQ1+Yhe4047T55jvzz7MUqF/dBBlA==
+
+core-js@^3.6.0:
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/core-js/-/core-js-3.6.0.tgz#2b854e451de1967d1e29896025cdc13a2518d9ea"
+  integrity sha512-AHPTNKzyB+YwgDWoSOCaid9PUSEF6781vsfiK8qUz62zRR448/XgK2NtCbpiUGizbep8Lrpt0Du19PpGGZvw3Q==
 
 core-util-is@~1.0.0:
   version "1.0.2"
@@ -6675,6 +6681,11 @@ write@^0.2.1:
   integrity sha1-X8A4KOJkzqP+kUVUdvejxWbLB1c=
   dependencies:
     mkdirp "^0.5.1"
+
+ws@^7.2.1:
+  version "7.2.1"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-7.2.1.tgz#03ed52423cd744084b2cf42ed197c8b65a936b8e"
+  integrity sha512-sucePNSafamSKoOqoNfBd8V0StlkzJKL2ZAhGQinCfNQ+oacw+Pk7lcdAElecBF2VkLNZRiIb5Oi1Q5lVUVt2A==
 
 ws@~3.3.1:
   version "3.3.3"
