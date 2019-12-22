@@ -8,10 +8,10 @@
 const { fork } = require('child_process')
 
 // 3rd party
+const resolve = require('@rollup/plugin-node-resolve')
+const commonjs = require('@rollup/plugin-commonjs')
+const json = require('@rollup/plugin-json')
 const babel = require('rollup-plugin-babel')
-const resolve = require('rollup-plugin-node-resolve')
-const commonjs = require('rollup-plugin-commonjs')
-const json = require('rollup-plugin-json')
 const globals = require('rollup-plugin-node-globals')
 const builtins = require('rollup-plugin-node-builtins')
 const istanbul = require('rollup-plugin-istanbul')
