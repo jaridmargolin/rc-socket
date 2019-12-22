@@ -25,6 +25,9 @@
     "view-cov": "open-cli ./coverage/lcov-report/index.html",
     "view-docs": "open-cli ./docs/index.html"
   },
+  "dependencies": {
+    "core-js": "^3.6.0"
+  },
   "devDependencies": {
     "@babel/core": "7.7.7",
     "@babel/plugin-proposal-class-properties": "7.7.4",
@@ -45,7 +48,6 @@
     "babel-eslint": "10.0.3",
     "chai": "4.2.0",
     "codecov": "4.0.0-0",
-    "core-js": "3.6.0",
     "debug-prop": "0.0.1",
     "delay": "4.3.0",
     "eslint": "5.16.0",
