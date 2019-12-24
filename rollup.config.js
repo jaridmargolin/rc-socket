@@ -4,22 +4,30 @@
  * dependencies
  * -------------------------------------------------------------------------- */
 
+// core
+import { join } from 'path'
+import { readdir } from 'fs'
+import { promisify } from 'util'
+
 // 3rd party
+import pkgDir from 'pkg-dir'
 import commonjs from '@rollup/plugin-commonjs'
 import resolve from '@rollup/plugin-node-resolve'
 import { terser } from 'rollup-plugin-terser'
 import babel from 'rollup-plugin-babel'
 
+// promisify
+const readdirP = promisify(readdir)
+
 /* -----------------------------------------------------------------------------
  * rollup config
  * -------------------------------------------------------------------------- */
 
-const externals = [
-  'core-js/modules/es.array.for-each',
-  'core-js/modules/es.date.to-string',
-  'core-js/modules/es.object.assign',
-  'core-js/modules/web.dom-collections.for-each'
-]
+const getExternals = async () => {
+  const corejsDir = await pkgDir(require.resolve('core-js'))
+  const files = await readdirP(join(corejsDir, 'modules'))
+  return files.map(file => join('core-js', 'modules', file).replace('.js', ''))
+}
 
 const sharedPlugins = [
   resolve({
@@ -33,20 +41,10 @@ const sharedPlugins = [
   })
 ]
 
-export default [
+export default async () => [
   {
     input: 'src/rc-socket.ts',
-    plugins: [...sharedPlugins],
-    output: {
-      file: 'dist/rc-socket.js',
-      format: 'umd',
-      name: 'RcSocket',
-      exports: 'named'
-    }
-  },
-  {
-    input: 'src/rc-socket.ts',
-    external: externals,
+    external: await getExternals(),
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/common/rc-socket.js',
@@ -56,7 +54,7 @@ export default [
   },
   {
     input: 'src/rc-socket.ts',
-    external: externals,
+    external: await getExternals(),
     plugins: [...sharedPlugins],
     output: {
       file: 'dist/es/rc-socket.js',
@@ -68,6 +66,16 @@ export default [
     plugins: [...sharedPlugins, terser()],
     output: {
       file: 'dist/rc-socket.min.js',
+      format: 'umd',
+      name: 'RcSocket',
+      exports: 'named'
+    }
+  },
+  {
+    input: 'src/rc-socket.ts',
+    plugins: [...sharedPlugins],
+    output: {
+      file: 'dist/rc-socket.js',
       format: 'umd',
       name: 'RcSocket',
       exports: 'named'
