@@ -150,4 +150,140 @@ describe('rc-socket', function() {
 
     await waitFor(() => messageSpy.called)
   })
+
+  it('Should support adding event listeners', async () => {
+    const ws = new RcSocket(WS_URL)
+    await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
+
+    const listenerSpy = sinon.spy()
+    ws.addEventListener('message', listenerSpy)
+
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy.callCount, 1)
+  })
+
+  it('Should support removing listener w/ add return value', async () => {
+    const ws = new RcSocket(WS_URL)
+    await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
+
+    const listenerSpy = sinon.spy()
+    const removeListener = ws.addEventListener('message', listenerSpy)
+    removeListener()
+
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy.callCount, 0)
+    assert.equal(ws['_listeners'].size, 0)
+  })
+
+  it('Should support removing listener with instance method', async () => {
+    const ws = new RcSocket(WS_URL)
+    await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
+
+    const listenerSpy = sinon.spy()
+    ws.addEventListener('message', listenerSpy)
+    ws.removeEventListener('message', listenerSpy)
+
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy.callCount, 0)
+    assert.equal(ws['_listeners'].size, 0)
+  })
+
+  it('Should only remove listener when capture option matches', async () => {
+    const ws = new RcSocket(WS_URL)
+    await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
+
+    const listenerSpy1 = sinon.spy()
+    const listenerSpy2 = sinon.spy()
+    const listenerSpy3 = sinon.spy()
+    const listenerSpy4 = sinon.spy()
+    const listenerSpy5 = sinon.spy()
+    const listenerSpy6 = sinon.spy()
+
+    ws.addEventListener('message', listenerSpy1)
+    ws.addEventListener('message', listenerSpy2, {})
+    ws.addEventListener('message', listenerSpy3, true)
+    ws.addEventListener('message', listenerSpy4, { capture: true })
+    ws.addEventListener('message', listenerSpy5, false)
+    ws.addEventListener('message', listenerSpy6, { capture: false })
+
+    ws.removeEventListener('message', listenerSpy1)
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy1.callCount, 0)
+    assert.equal(listenerSpy2.callCount, 1)
+    assert.equal(listenerSpy3.callCount, 1)
+    assert.equal(listenerSpy4.callCount, 1)
+    assert.equal(listenerSpy5.callCount, 1)
+    assert.equal(listenerSpy6.callCount, 1)
+
+    ws.removeEventListener('message', listenerSpy2, {})
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy2.callCount, 1)
+    assert.equal(listenerSpy3.callCount, 2)
+    assert.equal(listenerSpy4.callCount, 2)
+    assert.equal(listenerSpy5.callCount, 2)
+    assert.equal(listenerSpy6.callCount, 2)
+
+    ws.removeEventListener('message', listenerSpy3, true)
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy3.callCount, 2)
+    assert.equal(listenerSpy4.callCount, 3)
+    assert.equal(listenerSpy5.callCount, 3)
+    assert.equal(listenerSpy6.callCount, 3)
+
+    ws.removeEventListener('message', listenerSpy4, { capture: true })
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy4.callCount, 3)
+    assert.equal(listenerSpy5.callCount, 4)
+    assert.equal(listenerSpy6.callCount, 4)
+
+    ws.removeEventListener('message', listenerSpy5, false)
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy5.callCount, 4)
+    assert.equal(listenerSpy6.callCount, 5)
+
+    ws.removeEventListener('message', listenerSpy6, { capture: false })
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy6.callCount, 5)
+
+    assert.equal(ws['_listeners'].size, 0)
+  })
+
+  it('Should have method to remove all event listeners', async () => {
+    const ws = new RcSocket(WS_URL)
+    await waitFor(() => ws.readyState === RcSocketReadyState.OPEN)
+
+    const listenerSpy1 = sinon.spy()
+    const listenerSpy2 = sinon.spy()
+    const listenerSpy3 = sinon.spy()
+    const listenerSpy4 = sinon.spy()
+    const listenerSpy5 = sinon.spy()
+    const listenerSpy6 = sinon.spy()
+
+    ws.addEventListener('message', listenerSpy1)
+    ws.addEventListener('message', listenerSpy2, {})
+    ws.addEventListener('message', listenerSpy3, true)
+    ws.addEventListener('message', listenerSpy4, { capture: true })
+    ws.addEventListener('message', listenerSpy5, false)
+    ws.addEventListener('message', listenerSpy6, { capture: false })
+
+    ws.removeAllEventListeners()
+    ws.send({ msg: 'test' })
+    await new Promise(resolve => (ws.onmessage = () => resolve()))
+    assert.equal(listenerSpy1.callCount, 0)
+    assert.equal(listenerSpy2.callCount, 0)
+    assert.equal(listenerSpy3.callCount, 0)
+    assert.equal(listenerSpy4.callCount, 0)
+    assert.equal(listenerSpy5.callCount, 0)
+    assert.equal(listenerSpy6.callCount, 0)
+    assert.equal(ws['_listeners'].size, 0)
+  })
 })

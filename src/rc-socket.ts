@@ -1,4 +1,4 @@
-/* globals WebSocket:true */
+/* globals WebSocket:true EventTarget: true Event: true */
 /* adapted from: https://github.com/joewalnes/reconnecting-websocket */
 'use strict'
 
@@ -51,7 +51,7 @@ export enum RcSocketCloseType {
   RETRY
 }
 
-export enum RcSocketEventName {
+export enum RcSocketEventHandlerName {
   /** Event broadcast when websocket begins connecting. */
   CONNECTING = 'onconnecting',
   /** Event broadcast when websocket connection times out. */
@@ -68,9 +68,11 @@ export enum RcSocketEventName {
   CLOSE = 'onclose'
 }
 
-type GetRcSocketEventType<EventName extends RcSocketEventName> = Parameters<
-  NonNullable<RcSocket[EventName]>
->[0]
+export type RCSocketListener = EventListener | EventListenerObject | null
+
+type GetRcSocketEventType<
+EventName extends RcSocketEventHandlerName
+> = Parameters<NonNullable<RcSocket[EventName]>>[0]
 
 /* -----------------------------------------------------------------------------
  * RcSocket
@@ -78,7 +80,7 @@ type GetRcSocketEventType<EventName extends RcSocketEventName> = Parameters<
 
 export default class RcSocket<
 Message extends RcSocketMessage = RcSocketMessage
-> {
+> extends EventTarget {
   static defaultSettings: RcSocketSettings = {
     debug: false,
     logger: console,
@@ -117,6 +119,7 @@ Message extends RcSocketMessage = RcSocketMessage
   protected _shouldReopen: boolean = false
   protected _closeType: RcSocketCloseType | null = null
   protected _connectTimer: ReturnType<typeof setTimeout> | null = null
+  protected _listeners: Map<string, Set<RCSocketListener>> = new Map()
 
   /**
    * @constructor
@@ -138,6 +141,8 @@ Message extends RcSocketMessage = RcSocketMessage
     protocols?: string | string[],
     settings?: Partial<RcSocketSettings>
   ) {
+    super()
+
     this.url = url
     this.protocols = protocols
 
@@ -239,6 +244,84 @@ Message extends RcSocketMessage = RcSocketMessage
     this._attempts = 1
   }
 
+  /**
+   * @desc Registers an event handler of a specific event type on the
+   * EventTarget. Unlike the default WebSocket `addEventListener` method,
+   * RcSocket will return the `removeEventListener` method.
+   *
+   * @example
+   * const listener = evt => console.log(evt)
+   * socket.addEventListener('message', listener)
+   *
+   * @param type - A case-sensitive string representing the event type to listen
+   * for.
+   * @param listener - The object which receives a notification (an object that
+   * implements the Event interface) when an event of the specified type occur.
+   * @param options - An options object that specifies characteristics about the
+   * event listener.
+   */
+  addEventListener (
+    type: string,
+    listener: EventListener | EventListenerObject | null,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    const listenerKey = this._getListenerKey(type, options)
+    const listenerSet =
+      this._listeners.get(listenerKey) || new Set<RCSocketListener>()
+    this._listeners.set(listenerKey, listenerSet.add(listener))
+
+    super.addEventListener(type, listener, options)
+
+    return () => this.removeEventListener(type, listener, options)
+  }
+
+  /**
+   * @desc Removes an event listener from the EventTarget.
+   *
+   * @example
+   * socket.removeEventListener('message', listener)
+   *
+   * @param type - A case-sensitive string representing the event type to listen
+   * for.
+   * @param listener - The object which receives a notification (an object that
+   * implements the Event interface) when an event of the specified type occur.
+   * @param options - An options object that specifies characteristics about the
+   * event listener.
+   */
+  removeEventListener (
+    type: string,
+    listener: EventListener | EventListenerObject | null,
+    options?: EventListenerOptions | boolean
+  ) {
+    const listenerKey = this._getListenerKey(type, options)
+    const listenerSet = this._listeners.get(listenerKey)
+    if (listenerSet) {
+      listenerSet.delete(listener)
+      !listenerSet.size && this._listeners.delete(listenerKey)
+    }
+
+    super.removeEventListener(type, listener, options)
+  }
+
+  /**
+   * @desc Removes all event listeners from the EventTarget.
+   *
+   * @example
+   * socket.removeAllEventListeners()
+   */
+  removeAllEventListeners () {
+    this._listeners.forEach((listenerSet, key) => {
+      const [type, _capture] = key.split('🚧')
+      const capture = _capture === 'undefined' ? undefined : _capture === 'true'
+
+      listenerSet.forEach(listener =>
+        this.removeEventListener(type, listener, capture)
+      )
+    })
+
+    this._listeners.clear()
+  }
+
   /* ---------------------------------------------------------------------------
    * WebSocket Management
    * ------------------------------------------------------------------------ */
@@ -262,13 +345,13 @@ Message extends RcSocketMessage = RcSocketMessage
     // Rather than letting the websocket set indefinetely, we close the socket
     // after a specified timeout. The close will automatically handle retrying.
     this._connectTimer = setTimeout(() => {
-      this._trigger(RcSocketEventName.TIMEOUT)
+      this._trigger(RcSocketEventHandlerName.TIMEOUT)
       this._close(RcSocketCloseType.RETRY)
     }, this.settings.connectionTimeout)
 
     this._stateChanged(
       RcSocketReadyState.CONNECTING,
-      RcSocketEventName.CONNECTING
+      RcSocketEventHandlerName.CONNECTING
     )
   }
 
@@ -301,7 +384,11 @@ Message extends RcSocketMessage = RcSocketMessage
     }
 
     this._attempts = 1
-    this._stateChanged(RcSocketReadyState.OPEN, RcSocketEventName.OPEN, evt)
+    this._stateChanged(
+      RcSocketReadyState.OPEN,
+      RcSocketEventHandlerName.OPEN,
+      evt
+    )
     this._sendQueued()
   }
 
@@ -319,7 +406,7 @@ Message extends RcSocketMessage = RcSocketMessage
     if (this._closeType === RcSocketCloseType.FORCE) {
       this._stateChanged(
         RcSocketReadyState.CLOSED,
-        RcSocketEventName.CLOSE,
+        RcSocketEventHandlerName.CLOSE,
         Object.assign(evt, {
           forced: true
         })
@@ -330,7 +417,7 @@ Message extends RcSocketMessage = RcSocketMessage
       }
     } else {
       if (this._closeType !== RcSocketCloseType.RETRY) {
-        this._trigger(RcSocketEventName.CLOSE, evt)
+        this._trigger(RcSocketEventHandlerName.CLOSE, evt)
       }
 
       this._reconnect()
@@ -343,7 +430,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @param evt - WebSocket onmessage evt.
    */
   protected _onmessage (evt: MessageEvent) {
-    this._trigger(RcSocketEventName.MESSAGE, evt)
+    this._trigger(RcSocketEventHandlerName.MESSAGE, evt)
   }
 
   /**
@@ -352,7 +439,7 @@ Message extends RcSocketMessage = RcSocketMessage
    * @param evt - WebSocket onerror evt.
    */
   protected _onerror (evt: Event) {
-    this._trigger(RcSocketEventName.ERROR, evt)
+    this._trigger(RcSocketEventHandlerName.ERROR, evt)
   }
 
   /**
@@ -369,7 +456,10 @@ Message extends RcSocketMessage = RcSocketMessage
 
     if (this._ws && this.readyState < WebSocket.CLOSING) {
       this._ws.close()
-      this._stateChanged(RcSocketReadyState.CLOSING, RcSocketEventName.CLOSING)
+      this._stateChanged(
+        RcSocketReadyState.CLOSING,
+        RcSocketEventHandlerName.CLOSING
+      )
     }
   }
 
@@ -425,13 +515,35 @@ Message extends RcSocketMessage = RcSocketMessage
    * ------------------------------------------------------------------------ */
 
   /**
+   * @desc Small helper to obtain consistent key for lookingup our listeners
+   * based on event listener matching algorithm
+   * ref: https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener#Matching_event_listeners_for_removal
+   *
+   * @param type - A case-sensitive string representing the event type to listen
+   * for.
+   * @param options - An options object that specifies characteristics about the
+   * event listener.
+   */
+  protected _getListenerKey (
+    type: string,
+    options?: boolean | AddEventListenerOptions
+  ) {
+    const capture = typeof options === 'object' ? options.capture : options
+    // Using an obscure emoji as a separator to reduce any collisions that
+    // could occur with custom event types. Example: `message:1234`
+    return typeof capture === 'boolean'
+      ? `${type}🚧${capture.toString()}`
+      : `${type}🚧undefined`
+  }
+
+  /**
    * @desc Update state, log, trigger.
    *
    * @param state - String representing WebSocket.
    * @param name - String of the event name.
    * @param evt - Event object.
    */
-  protected _stateChanged<EventName extends RcSocketEventName> (
+  protected _stateChanged<EventName extends RcSocketEventHandlerName> (
     readyState: RcSocketReadyState,
     evtName: EventName,
     evt?: GetRcSocketEventType<EventName>
@@ -446,16 +558,25 @@ Message extends RcSocketMessage = RcSocketMessage
    * @param evtName - Name of event to fire.
    * @param evt - Raw WebSocket evt we are proxying.
    */
-  protected _trigger<EventName extends RcSocketEventName> (
-    evtName: EventName,
+  protected _trigger<EventName extends RcSocketEventHandlerName> (
+    evtHandlerName: EventName,
     evt?: GetRcSocketEventType<EventName>
   ) {
+    const event =
+      typeof evt === 'undefined'
+        ? (new Event(evtHandlerName.slice(2)) as Event)
+        : (new (evt as any).constructor(evt.type, evt) as NonNullable<
+            typeof evt
+          >)
+
     if (this.settings.debug) {
-      this.settings.logger.debug('RcSocket', evtName, this.url, evt)
+      this.settings.logger.debug('RcSocket', evtHandlerName, this.url, event)
     }
 
     // TODO: Determine why handler cannot be correctly inferred
-    const handler = this[evtName] as any
-    handler && handler.call(this._ws, evt)
+    const handler = this[evtHandlerName] as any
+    handler && handler.call(this._ws, event)
+
+    this.dispatchEvent(event)
   }
 }
