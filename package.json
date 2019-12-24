@@ -26,7 +26,8 @@
     "view-docs": "open-cli ./docs/index.html"
   },
   "dependencies": {
-    "core-js": "^3.6.0"
+    "core-js": "^3.6.0",
+    "event-target-shim": "^5.0.1"
   },
   "devDependencies": {
     "@babel/core": "7.7.7",

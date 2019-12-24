@@ -1,6 +1,14 @@
-/* globals WebSocket:true EventTarget: true Event: true */
+/* globals WebSocket:true Event: true */
 /* adapted from: https://github.com/joewalnes/reconnecting-websocket */
 'use strict'
+
+/* -----------------------------------------------------------------------------
+ * dependencies
+ * -------------------------------------------------------------------------- */
+
+// 3rd party
+// This is required in order to extend EventTarget
+import { EventTarget } from 'event-target-shim'
 
 /* -----------------------------------------------------------------------------
  * types

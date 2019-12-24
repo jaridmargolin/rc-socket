@@ -26,7 +26,10 @@ const readdirP = promisify(readdir)
 const getExternals = async () => {
   const corejsDir = await pkgDir(require.resolve('core-js'))
   const files = await readdirP(join(corejsDir, 'modules'))
-  return files.map(file => join('core-js', 'modules', file).replace('.js', ''))
+
+  return files
+    .map(file => join('core-js', 'modules', file).replace('.js', ''))
+    .concat(['event-target-shim'])
 }
 
 const sharedPlugins = [
