@@ -5,7 +5,6 @@
       "modules": false,
       "corejs": 3,
       "useBuiltIns": "usage",
-      "loose": true,
       "targets": { "browsers": [">0.25% in US"] }
     }],
     "@babel/preset-typescript"
