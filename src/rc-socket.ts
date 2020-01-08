@@ -83,6 +83,21 @@ EventName extends RcSocketEventHandlerName
 > = Parameters<NonNullable<RcSocket[EventName]>>[0]
 
 /* -----------------------------------------------------------------------------
+ * RcSocketEvent
+ *
+ * Need to shim to support envornments that don't support native `Event`
+ * (specifically, `react-native`)
+ * -------------------------------------------------------------------------- */
+
+class RcSocketEvent {
+  type: string
+
+  constructor (type: string) {
+    this.type = type
+  }
+}
+
+/* -----------------------------------------------------------------------------
  * RcSocket
  * -------------------------------------------------------------------------- */
 
@@ -572,7 +587,7 @@ Message extends RcSocketMessage = RcSocketMessage
   ) {
     const event =
       typeof evt === 'undefined'
-        ? (new Event(evtHandlerName.slice(2)) as Event)
+        ? (new RcSocketEvent(evtHandlerName.slice(2)) as Event)
         : (new (evt as any).constructor(evt.type, evt) as NonNullable<
             typeof evt
           >)
