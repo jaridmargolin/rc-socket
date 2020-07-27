@@ -588,9 +588,7 @@ Message extends RcSocketMessage = RcSocketMessage
     const event =
       typeof evt === 'undefined'
         ? (new RcSocketEvent(evtHandlerName.slice(2)) as Event)
-        : (new (evt as any).constructor(evt.type, evt) as NonNullable<
-            typeof evt
-          >)
+        : (evt as NonNullable<typeof evt>)
 
     if (this.settings.debug) {
       this.settings.logger.debug('RcSocket', evtHandlerName, this.url, event)
