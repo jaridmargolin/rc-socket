@@ -68,7 +68,7 @@
     "karma-mocha-reporter": "2.2.5",
     "karma-rollup-preprocessor": "7.0.2",
     "lint-staged": "9.5.0",
-    "lodash": "4.17.15",
+    "lodash": "4.17.21",
     "mocha": "7.0.0",
     "nyc": "15.0.0",
     "opn-cli": "5.0.0",
